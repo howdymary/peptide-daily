@@ -1,0 +1,162 @@
+// =============================================================================
+// PeptidePal — Prisma Schema
+// =============================================================================
+// Run migrations:
+//   npx prisma migrate dev --name init
+//   npx prisma generate
+//
+// Production:
+//   npx prisma migrate deploy
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Auth.js models (required by @auth/prisma-adapter) ───────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ── Core domain models ──────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  passwordHash  String?   @map("password_hash")
+  role          UserRole  @default(USER)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  accounts Account[]
+  sessions Session[]
+  reviews  Review[]
+
+  @@map("users")
+}
+
+model Vendor {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  website   String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  prices PeptidePrice[]
+
+  @@map("vendors")
+}
+
+model Peptide {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  category    String?
+  sequence    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  prices  PeptidePrice[]
+  reviews Review[]
+
+  @@index([slug])
+  @@index([name])
+  @@map("peptides")
+}
+
+model PeptidePrice {
+  id                 String   @id @default(cuid())
+  peptideId          String   @map("peptide_id")
+  vendorId           String   @map("vendor_id")
+  price              Decimal  @db.Decimal(10, 2)
+  currency           String   @default("USD") @db.VarChar(3)
+  concentration      String
+  sku                String
+  productUrl         String   @map("product_url")
+  availabilityStatus String   @default("in_stock") @map("availability_status")
+  lastUpdated        DateTime @default(now()) @map("last_updated")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  peptide Peptide @relation(fields: [peptideId], references: [id], onDelete: Cascade)
+  vendor  Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([peptideId, vendorId, sku])
+  @@index([peptideId])
+  @@index([vendorId])
+  @@index([price])
+  @@map("peptide_prices")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  peptideId String   @map("peptide_id")
+  userId    String   @map("user_id")
+  rating    Int      @db.SmallInt
+  title     String   @db.VarChar(200)
+  body      String   @db.Text
+  flagged   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  peptide Peptide @relation(fields: [peptideId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // One review per user per peptide
+  @@unique([peptideId, userId])
+  @@index([peptideId])
+  @@index([userId])
+  @@map("reviews")
+}
