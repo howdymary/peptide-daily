@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:migrate": "npx prisma migrate dev",
-    "db:migrate:deploy": "npx prisma migrate deploy",
-    "db:seed": "npx tsx prisma/seed.ts",
-    "db:studio": "npx prisma studio",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
     "worker:vendor": "npx tsx src/jobs/vendor-refresh-worker.ts"
   },
   "prisma": {
