@@ -53,6 +53,8 @@ export function SearchFilters() {
           <option value="price_asc">Price: Low to High</option>
           <option value="price_desc">Price: High to Low</option>
           <option value="rating">Highest Rated</option>
+          <option value="finnrick_rating">Finnrick Rating</option>
+          <option value="trust_score">Trust Score</option>
         </select>
 
         {/* Availability filter */}
@@ -65,6 +67,21 @@ export function SearchFilters() {
           <option value="in_stock">In Stock</option>
           <option value="out_of_stock">Out of Stock</option>
           <option value="pre_order">Pre-Order</option>
+        </select>
+
+        {/* Finnrick grade filter */}
+        <select
+          value={searchParams.get("finnrickGrade") || ""}
+          onChange={(e) => updateParams("finnrickGrade", e.target.value)}
+          className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-4 py-2.5 text-sm focus:border-[var(--accent)] focus:outline-none"
+          title="Filter by Finnrick lab testing grade"
+        >
+          <option value="">Finnrick: Any Grade</option>
+          <option value="A">Grade A (Great)</option>
+          <option value="B">Grade B (Good)</option>
+          <option value="C">Grade C (Okay)</option>
+          <option value="D">Grade D (Poor)</option>
+          <option value="E">Grade E (Bad)</option>
         </select>
       </div>
 

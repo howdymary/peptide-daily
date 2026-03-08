@@ -94,7 +94,9 @@ model Vendor {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  prices PeptidePrice[]
+  prices          PeptidePrice[]
+  finnrickRatings FinnrickVendorRating[]
+  vendorMapping   VendorMapping?
 
   @@map("vendors")
 }
@@ -109,8 +111,9 @@ model Peptide {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  prices  PeptidePrice[]
-  reviews Review[]
+  prices          PeptidePrice[]
+  reviews         Review[]
+  finnrickRatings FinnrickVendorRating[]
 
   @@index([slug])
   @@index([name])
@@ -159,4 +162,108 @@ model Review {
   @@index([peptideId])
   @@index([userId])
   @@map("reviews")
+}
+
+// ── Finnrick integration models ─────────────────────────────────────────────
+
+enum FinnrickGrade {
+  A
+  B
+  C
+  D
+  E
+}
+
+/// Aggregate Finnrick rating for a specific vendor+peptide pair.
+/// Raw Finnrick values — never modified by our scoring logic.
+model FinnrickVendorRating {
+  id              String        @id @default(cuid())
+  vendorId        String        @map("vendor_id")
+  peptideId       String        @map("peptide_id")
+  grade           FinnrickGrade
+  averageScore    Decimal       @db.Decimal(4, 1) @map("average_score")
+  testCount       Int           @map("test_count")
+  minScore        Decimal       @db.Decimal(4, 1) @map("min_score")
+  maxScore        Decimal       @db.Decimal(4, 1) @map("max_score")
+  oldestTestDate  DateTime      @map("oldest_test_date")
+  newestTestDate  DateTime      @map("newest_test_date")
+  finnrickUrl     String?       @map("finnrick_url")
+  importBatchId   String        @map("import_batch_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  vendor  Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  peptide Peptide             @relation(fields: [peptideId], references: [id], onDelete: Cascade)
+  tests   FinnrickTestResult[]
+
+  @@unique([vendorId, peptideId])
+  @@index([peptideId])
+  @@index([vendorId])
+  @@index([grade])
+  @@index([averageScore])
+  @@map("finnrick_vendor_ratings")
+}
+
+/// Individual lab test result backing a FinnrickVendorRating.
+model FinnrickTestResult {
+  id                 String   @id @default(cuid())
+  ratingId           String   @map("rating_id")
+  testDate           DateTime @map("test_date")
+  testScore          Decimal  @db.Decimal(4, 1) @map("test_score")
+  advertisedQuantity Decimal  @db.Decimal(8, 2) @map("advertised_quantity")
+  actualQuantity     Decimal  @db.Decimal(8, 2) @map("actual_quantity")
+  quantityVariance   Decimal  @db.Decimal(6, 2) @map("quantity_variance")
+  purity             Decimal  @db.Decimal(5, 2)
+  batchId            String   @map("batch_id")
+  containerType      String   @map("container_type")
+  labId              String   @map("lab_id")
+  source             String
+  endotoxinsStatus   String?  @map("endotoxins_status")
+  certificateLink    String?  @map("certificate_link")
+  identityResult     String   @map("identity_result")
+  importBatchId      String   @map("import_batch_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  rating FinnrickVendorRating @relation(fields: [ratingId], references: [id], onDelete: Cascade)
+
+  @@index([ratingId])
+  @@index([testDate])
+  @@map("finnrick_test_results")
+}
+
+/// Audit trail for Finnrick data imports.
+model FinnrickImport {
+  id          String    @id @default(cuid())
+  filename    String
+  format      String
+  recordCount Int       @default(0) @map("record_count")
+  errorCount  Int       @default(0) @map("error_count")
+  errors      String?   @db.Text
+  importedBy  String?   @map("imported_by")
+  status      String    @default("pending")
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([status])
+  @@map("finnrick_imports")
+}
+
+/// Maps our Vendor records to Finnrick vendor entries and configures scraping.
+model VendorMapping {
+  id               String   @id @default(cuid())
+  vendorId         String   @unique @map("vendor_id")
+  finnrickSlug     String   @unique @map("finnrick_slug")
+  vendorDomain     String?  @map("vendor_domain")
+  scrapingEnabled  Boolean  @default(false) @map("scraping_enabled")
+  scrapingAdapter  String?  @map("scraping_adapter")
+  rateLimit        Int      @default(10) @map("rate_limit")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([finnrickSlug])
+  @@index([vendorDomain])
+  @@map("vendor_mappings")
 }

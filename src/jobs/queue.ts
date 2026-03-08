@@ -48,6 +48,16 @@ export const statsRecalcQueue = new Queue("stats-recalc", {
   },
 });
 
+export const finnrickSyncQueue = new Queue("finnrick-sync", {
+  connection: REDIS_CONNECTION,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: "exponential", delay: 10000 },
+    removeOnComplete: { count: 50 },
+    removeOnFail: { count: 25 },
+  },
+});
+
 // ── Queue event logging ─────────────────────────────────────────────────────
 
 export function setupQueueEvents(queue: Queue): QueueEvents {

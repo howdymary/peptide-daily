@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { StarRating } from "@/components/ui/star-rating";
+import { GradeBadge } from "@/components/finnrick/grade-badge";
 import type { PeptideListItem } from "@/types";
 
 interface PeptideCardProps {
@@ -27,9 +28,14 @@ export function PeptideCard({ peptide }: PeptideCardProps) {
             <p className="text-lg font-bold text-[var(--success)]">
               ${peptide.bestPrice.toFixed(2)}
             </p>
-            <p className="text-xs text-[var(--muted)]">
-              {peptide.bestPriceVendor}
-            </p>
+            <div className="flex items-center justify-end gap-1.5">
+              <p className="text-xs text-[var(--muted)]">
+                {peptide.bestPriceVendor}
+              </p>
+              {peptide.bestFinnrickGrade && (
+                <GradeBadge grade={peptide.bestFinnrickGrade} compact />
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -48,9 +54,19 @@ export function PeptideCard({ peptide }: PeptideCardProps) {
           </span>
         </div>
 
-        <span className="text-xs text-[var(--muted)]">
-          {peptide.priceCount} vendor{peptide.priceCount !== 1 ? "s" : ""}
-        </span>
+        <div className="flex items-center gap-2">
+          {peptide.trustScore && (
+            <span
+              className="text-xs text-[var(--muted)]"
+              title={`PeptidePal trust score: ${peptide.trustScore.overall}/100`}
+            >
+              Trust: {peptide.trustScore.overall}
+            </span>
+          )}
+          <span className="text-xs text-[var(--muted)]">
+            {peptide.priceCount} vendor{peptide.priceCount !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
     </Link>
   );
