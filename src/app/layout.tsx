@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
-  title: "PeptidePal — Peptide Price Aggregator",
+  title: {
+    default: "PeptidePal — Lab-Verified Peptide Price Comparison",
+    template: "%s — PeptidePal",
+  },
   description:
-    "Compare peptide prices across vendors, read reviews, and find the best deals.",
+    "Compare peptide prices across vendors with third-party lab testing data from Finnrick. Evidence-driven quality ratings, community reviews, and real-time pricing.",
+  keywords: ["peptides", "peptide comparison", "Finnrick ratings", "BPC-157", "semaglutide", "research chemicals", "lab testing"],
+  openGraph: {
+    siteName: "PeptidePal",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -15,11 +24,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen antialiased">
+      <body className="flex min-h-screen flex-col antialiased">
         <Header />
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <main className="flex-1">
           {children}
         </main>
+        <Footer />
       </body>
     </html>
   );

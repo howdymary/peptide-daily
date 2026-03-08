@@ -3,30 +3,36 @@ import { SearchFilters } from "@/components/peptides/search-filters";
 import { PeptideList } from "@/components/peptides/peptide-list";
 
 export const metadata = {
-  title: "Peptide Catalog — PeptidePal",
-  description: "Browse and compare peptide prices from multiple vendors.",
+  title: "Peptide Catalog",
+  description:
+    "Browse and compare peptides by price, Finnrick lab rating, and community reviews. Find the best vendors for BPC-157, semaglutide, TB-500, and more.",
 };
 
 export default function PeptidesPage() {
   return (
-    <div>
-      <h1 className="mb-2 text-2xl font-bold">Peptide Catalog</h1>
-      <p className="mb-6 text-[var(--muted)]">
-        Compare prices across vendors and find the best deals.
-      </p>
+    <div className="container-page py-8">
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
+          Peptide Catalog
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+          Compare vendor prices alongside third-party Finnrick lab data. Prices
+          refresh every 15 minutes.
+        </p>
+      </div>
 
-      <Suspense fallback={<div className="h-20 animate-pulse rounded-lg bg-[var(--card-bg)]" />}>
+      {/* Filters */}
+      <Suspense fallback={<div className="skeleton mb-6 h-20 rounded-xl" />}>
         <SearchFilters />
       </Suspense>
 
+      {/* Results */}
       <Suspense
         fallback={
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, i) => (
-              <div
-                key={i}
-                className="h-40 animate-pulse rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)]"
-              />
+              <div key={i} className="skeleton h-44 rounded-xl" />
             ))}
           </div>
         }
