@@ -79,13 +79,21 @@ export async function getScrapableVendors(): Promise<VendorMappingConfig[]> {
 
 /**
  * Resolve a Vendor record by domain name.
+ * Cached for MAPPING_TTL seconds.
  */
 export async function resolveVendorByDomain(
   domain: string,
 ): Promise<{ id: string; name: string; slug: string } | null> {
+  const cacheKey = `vendor-mapping:domain:${domain}`;
+  const cached = await cacheGet<{ id: string; name: string; slug: string }>(cacheKey);
+  if (cached) return cached;
+
   const mapping = await prisma.vendorMapping.findFirst({
     where: { vendorDomain: domain },
     include: { vendor: { select: { id: true, name: true, slug: true } } },
   });
-  return mapping?.vendor ?? null;
+
+  const result = mapping?.vendor ?? null;
+  if (result) await cacheSet(cacheKey, result, MAPPING_TTL);
+  return result;
 }

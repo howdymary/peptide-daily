@@ -20,12 +20,10 @@ import * as path from "path";
 import { createWorker, finnrickSyncQueue, setupQueueEvents } from "./queue";
 import { importFinnrickData } from "@/lib/finnrick/importer";
 import { logger } from "@/lib/utils/logger";
+import { env } from "@/config/env";
 
-const DATA_DIR = process.env.FINNRICK_DATA_DIR ?? "./data/finnrick";
-const SYNC_INTERVAL_HOURS = parseInt(
-  process.env.FINNRICK_SYNC_INTERVAL_HOURS ?? "6",
-  10,
-);
+const DATA_DIR = env.FINNRICK_DATA_DIR;
+const SYNC_INTERVAL_HOURS = env.FINNRICK_SYNC_INTERVAL_HOURS;
 
 setupQueueEvents(finnrickSyncQueue);
 

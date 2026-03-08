@@ -1,4 +1,4 @@
-import type { FinnrickRatingItem, TrustScore } from "@/types";
+import type { FinnrickGrade, FinnrickRatingItem, TrustScore } from "@/types";
 
 /**
  * Computes PeptidePal's combined "trust score" (0–100) for a vendor+peptide offer.
@@ -22,6 +22,19 @@ const GRADE_BASE: Record<string, number> = {
   D: 35,
   E: 15,
 };
+
+/** Numeric ordering for grades (higher = better). Used for sorting and comparisons. */
+export const GRADE_ORDER: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+
+/** Returns the best (highest-letter) grade from an array of rated objects. */
+export function bestFinnrickGrade<T extends { grade: string }>(
+  ratings: T[],
+): FinnrickGrade | null {
+  if (ratings.length === 0) return null;
+  return ratings.reduce((best, r) =>
+    (GRADE_ORDER[r.grade] ?? 0) > (GRADE_ORDER[best.grade] ?? 0) ? r : best,
+  ).grade as FinnrickGrade;
+}
 
 /** Grade band half-widths for score adjustment */
 const GRADE_BAND: Record<string, [number, number]> = {

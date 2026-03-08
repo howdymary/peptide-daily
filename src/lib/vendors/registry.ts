@@ -34,14 +34,8 @@ export function getFetcherByName(name: string): VendorFetcher | undefined {
 /**
  * Look up a fetcher by the scrapingAdapter name stored in VendorMapping.
  * Adapter name convention: the class name of the fetcher.
+ * Reuses the existing singleton instances from vendorFetchers.
  */
 export function getFetcherByAdapter(adapterName: string): VendorFetcher | undefined {
-  const adapterMap: Record<string, VendorFetcher> = {
-    VerifiedPeptidesFetcher: new VerifiedPeptidesFetcher(),
-    PeptidePartnersFetcher: new PeptidePartnersFetcher(),
-    ParadigmPeptideFetcher: new ParadigmPeptideFetcher(),
-    PolarisPeptidesFetcher: new PolarisPeptidesFetcher(),
-    SkyePeptidesFetcher: new SkyePeptidesFetcher(),
-  };
-  return adapterMap[adapterName];
+  return vendorFetchers.find((f) => f.constructor.name === adapterName);
 }

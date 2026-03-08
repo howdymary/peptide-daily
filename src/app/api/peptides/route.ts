@@ -4,7 +4,7 @@ import { cacheGet, cacheSet } from "@/lib/redis/client";
 import { peptideQuerySchema } from "@/lib/validation/schemas";
 import { errorResponse } from "@/lib/utils/api-response";
 import { withRateLimit } from "@/lib/security/rate-limit";
-import { computeTrustScore } from "@/lib/finnrick/trust-score";
+import { computeTrustScore, GRADE_ORDER, bestFinnrickGrade } from "@/lib/finnrick/trust-score";
 import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
 import { Prisma } from "@prisma/client";
 
@@ -110,8 +110,6 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
-
     const data = peptides.map((p) => {
       const ratings = p.reviews.map((r) => r.rating);
       const avgRating =
@@ -121,12 +119,7 @@ export async function GET(req: NextRequest) {
 
       const bestPrice = p.prices.length > 0 ? p.prices[0] : null;
 
-      const bestFinnrickGrade: FinnrickGrade | null =
-        p.finnrickRatings.length > 0
-          ? (p.finnrickRatings.reduce((best, r) =>
-              (gradeOrder[r.grade] ?? 0) > (gradeOrder[best.grade] ?? 0) ? r : best,
-            ).grade as FinnrickGrade)
-          : null;
+      const topFinnrickGrade = bestFinnrickGrade(p.finnrickRatings);
 
       let trustScore = null;
       if (bestPrice) {
@@ -169,7 +162,7 @@ export async function GET(req: NextRequest) {
         bestPrice: bestPrice ? Number(bestPrice.price) : null,
         bestPriceVendor: bestPrice ? bestPrice.vendor.name : null,
         priceCount: p.prices.length,
-        bestFinnrickGrade,
+        bestFinnrickGrade: topFinnrickGrade,
         trustScore,
       };
     });
@@ -183,8 +176,8 @@ export async function GET(req: NextRequest) {
     } else if (sortBy === "finnrick_rating") {
       data.sort(
         (a, b) =>
-          (gradeOrder[b.bestFinnrickGrade ?? ""] ?? 0) -
-          (gradeOrder[a.bestFinnrickGrade ?? ""] ?? 0),
+          (GRADE_ORDER[b.bestFinnrickGrade ?? ""] ?? 0) -
+          (GRADE_ORDER[a.bestFinnrickGrade ?? ""] ?? 0),
       );
     } else if (sortBy === "trust_score") {
       data.sort(
@@ -192,14 +185,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const totalPages = Math.ceil(totalCount / pageSize);
     const response = {
       data,
       pagination: {
         page,
         pageSize,
         totalCount,
-        totalPages: Math.ceil(totalCount / pageSize),
-        hasNext: page < Math.ceil(totalCount / pageSize),
+        totalPages,
+        hasNext: page < totalPages,
         hasPrev: page > 1,
       },
     };

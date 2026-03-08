@@ -1,5 +1,6 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
+import { finnrickGradeSchema } from "@/lib/finnrick/types";
 
 /**
  * Zod schemas for input validation.
@@ -48,7 +49,7 @@ export const peptideQuerySchema = z.object({
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   availability: z.enum(["in_stock", "out_of_stock", "pre_order"]).optional(),
-  finnrickGrade: z.enum(["A", "B", "C", "D", "E"]).optional(),
+  finnrickGrade: finnrickGradeSchema.optional(),
   minFinnrickScore: z.coerce.number().min(0).max(10).optional(),
   sortBy: z
     .enum(["name", "price_asc", "price_desc", "rating", "finnrick_rating", "trust_score"])

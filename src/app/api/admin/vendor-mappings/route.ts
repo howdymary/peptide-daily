@@ -79,8 +79,10 @@ export async function PUT(req: NextRequest) {
     });
 
     // Invalidate mapping caches
-    await cacheDelete("vendor-mappings:*");
-    await cacheDelete(`vendor-mapping:finnrick:${finnrickSlug}`);
+    await Promise.all([
+      cacheDelete("vendor-mappings:*"),
+      cacheDelete(`vendor-mapping:finnrick:${finnrickSlug}`),
+    ]);
 
     return successResponse(mapping);
   } catch (err) {
