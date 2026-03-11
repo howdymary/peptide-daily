@@ -429,6 +429,144 @@ async function main() {
     `Seeded ${peptides.length} peptides, ${vendors.length} vendors, ` +
       `${finnrickRatings.length} Finnrick ratings, ${mappings.length} vendor mappings.`,
   );
+
+  // ── News Sources ─────────────────────────────────────────────────────────
+  // All sources use public RSS/Atom feeds.  We display attribution + links only
+  // and never republish full article text.  robots.txt is checked at runtime.
+
+  const newsSources = [
+    {
+      name: "PubMed — Peptide Research",
+      slug: "pubmed-peptides",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=peptide+therapy+clinical&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description:
+        "Peer-reviewed research on peptide therapy from the NIH/NLM PubMed database.",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "PubMed — GLP-1 Research",
+      slug: "pubmed-glp1",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=GLP-1+semaglutide+tirzepatide&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description: "Latest GLP-1 and weight-management peptide research from PubMed.",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "FDA News Releases",
+      slug: "fda-press-releases",
+      feedUrl:
+        "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml",
+      feedType: "rss",
+      siteUrl: "https://www.fda.gov",
+      description:
+        "Official U.S. FDA press releases covering drug approvals, safety updates, and regulatory news.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "NIH News in Health",
+      slug: "nih-news",
+      feedUrl: "https://newsinhealth.nih.gov/sites/nihNIH/files/news_in_health.rss",
+      feedType: "rss",
+      siteUrl: "https://newsinhealth.nih.gov",
+      description:
+        "Plain-language health research news from the National Institutes of Health.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "Science Daily — Health & Medicine",
+      slug: "science-daily-health",
+      feedUrl: "https://www.sciencedaily.com/rss/health_medicine.xml",
+      feedType: "rss",
+      siteUrl: "https://www.sciencedaily.com",
+      description:
+        "Health and medicine research summaries from universities and research institutions.",
+      rateLimitMs: 5000,
+    },
+  ];
+
+  for (const source of newsSources) {
+    await prisma.newsSource.upsert({
+      where: { slug: source.slug },
+      update: { isActive: true },
+      create: { ...source, robotsTxtAllows: true },
+    });
+  }
+
+  console.log(`Seeded ${newsSources.length} news sources.`);
+
+  // ── Guides (authored evergreen content) ──────────────────────────────────
+
+  const guides = [
+    {
+      slug: "peptides-101",
+      title: "Peptides 101: What They Are and How They Work",
+      excerpt:
+        "A beginner-friendly introduction to peptides — what they are, how the body uses them, and why researchers study them. Covers the basics of amino acid chains, receptor binding, and common research applications.",
+      category: "basics",
+      readingTime: 7,
+      order: 1,
+    },
+    {
+      slug: "how-to-read-finnrick-ratings",
+      title: "How to Read Finnrick Lab Ratings",
+      excerpt:
+        "Finnrick publishes independent third-party lab testing results for peptide vendors. This guide explains the A–E grade scale, what purity and quantity variance mean, and how to use test data to evaluate vendors.",
+      category: "ratings",
+      readingTime: 5,
+      order: 1,
+    },
+    {
+      slug: "safety-and-regulatory-basics",
+      title: "Safety & Regulatory Basics for Peptide Research",
+      excerpt:
+        "An overview of the regulatory landscape for research peptides in the US and internationally. Covers FDA classification, compounding pharmacy rules, and what 'research use only' actually means.",
+      category: "safety",
+      readingTime: 8,
+      order: 1,
+    },
+    {
+      slug: "comparing-vendor-trust-scores",
+      title: "How PeptidePal Trust Scores Are Calculated",
+      excerpt:
+        "The Trust Score (0–100) is our composite quality metric. This guide breaks down the three components — Finnrick lab data, community reviews, and pricing signals — and explains the weighting model.",
+      category: "ratings",
+      readingTime: 4,
+      order: 2,
+    },
+    {
+      slug: "glp1-peptides-overview",
+      title: "GLP-1 Peptides: Semaglutide, Tirzepatide, and Beyond",
+      excerpt:
+        "GLP-1 receptor agonists have transformed metabolic research. This guide covers the mechanism of action, key research peptides in this class, and what the clinical trial data currently shows.",
+      category: "research",
+      readingTime: 10,
+      order: 1,
+    },
+    {
+      slug: "how-to-choose-a-peptide-vendor",
+      title: "How to Choose a Peptide Vendor: A Practical Guide",
+      excerpt:
+        "Price isn't the only variable. This guide walks through the key criteria for evaluating a vendor: third-party lab testing, certificate of analysis availability, shipping practices, and customer support.",
+      category: "vendors",
+      readingTime: 6,
+      order: 1,
+    },
+  ];
+
+  for (const guide of guides) {
+    await prisma.guide.upsert({
+      where: { slug: guide.slug },
+      update: {},
+      create: { ...guide, isPublished: true },
+    });
+  }
+
+  console.log(`Seeded ${guides.length} guides.`);
 }
 
 main()

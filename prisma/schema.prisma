@@ -267,3 +267,84 @@ model VendorMapping {
   @@index([vendorDomain])
   @@map("vendor_mappings")
 }
+
+// ── News & content models ────────────────────────────────────────────────────
+
+/// Configured news / RSS sources.  Only sources in this table (isActive=true)
+/// will be fetched.  robots.txt compliance is recorded per-source so operators
+/// can audit and toggle sources without re-checking.
+model NewsSource {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  slug            String    @unique
+  feedUrl         String    @map("feed_url")
+  /// "rss" | "atom" (both handled by rss-parser)
+  feedType        String    @default("rss") @map("feed_type")
+  siteUrl         String    @map("site_url")
+  isActive        Boolean   @default(true) @map("is_active")
+  /// Whether robots.txt allows our crawler (stored after first check).
+  robotsTxtAllows Boolean   @default(true) @map("robots_txt_allows")
+  /// Minimum ms to wait between requests to this source.
+  rateLimitMs     Int       @default(5000) @map("rate_limit_ms")
+  description     String?
+  lastFetchedAt   DateTime? @map("last_fetched_at")
+  lastFetchStatus String?   @map("last_fetch_status")
+  lastFetchError  String?   @db.Text @map("last_fetch_error")
+  fetchCount      Int       @default(0) @map("fetch_count")
+  errorCount      Int       @default(0) @map("error_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  articles NewsArticle[]
+
+  @@index([isActive])
+  @@map("news_sources")
+}
+
+/// A normalized news article ingested from a NewsSource.
+/// source_url is the dedup key — re-ingesting the same URL is a no-op.
+model NewsArticle {
+  id            String    @id @default(cuid())
+  sourceId      String    @map("source_id")
+  title         String
+  slug          String    @unique
+  sourceUrl     String    @unique @map("source_url")
+  excerpt       String?   @db.Text
+  author        String?
+  publishedAt   DateTime  @map("published_at")
+  /// Peptide names, themes, and topic tags extracted from title/excerpt.
+  tags          String[]
+  isPinned      Boolean   @default(false) @map("is_pinned")
+  isHidden      Boolean   @default(false) @map("is_hidden")
+  isEditorsPick Boolean   @default(false) @map("is_editors_pick")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  source NewsSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId])
+  @@index([publishedAt(sort: Desc)])
+  @@index([isHidden])
+  @@index([isEditorsPick])
+  @@map("news_articles")
+}
+
+/// Authored evergreen guide / tutorial pages shown in the "Learn" section.
+model Guide {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String   @db.Text
+  /// "basics" | "ratings" | "safety" | "vendors" | "research"
+  category    String
+  readingTime Int      @default(5) @map("reading_time")
+  /// Display order within category
+  order       Int      @default(0)
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([isPublished])
+  @@map("guides")
+}

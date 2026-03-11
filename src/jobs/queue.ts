@@ -101,3 +101,13 @@ export function createWorker(
 
   return worker;
 }
+
+export const newsIngestionQueue = new Queue("news-ingestion", {
+  connection: REDIS_CONNECTION,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 8000 },
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 50 },
+  },
+});

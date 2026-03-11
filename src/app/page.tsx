@@ -1,101 +1,197 @@
+/**
+ * Hub homepage — Points Guy-style layout combining:
+ *   1. Hero with search
+ *   2. Editor's Picks (featured news)
+ *   3. Main: News feed (tag-filtered) + Sidebar: Guides + Trending Peptides
+ *   4. How we source data
+ *   5. CTA band
+ */
+
 import Link from "next/link";
-import { Suspense } from "react";
-import { FeaturedPeptides } from "@/components/home/featured-peptides";
-
-// ── Static sections ──────────────────────────────────────────────────────────
-
-const CATEGORIES = [
-  {
-    slug: "glp1",
-    label: "GLP-1 / Metabolic",
-    description: "Weight management and glucose regulation",
-    icon: "⚡",
-    query: "semaglutide",
-    color: "var(--brand-teal)",
-    colorBg: "#f0fdfa",
-  },
-  {
-    slug: "gh",
-    label: "Growth Hormone",
-    description: "GH secretagogues and GHRH analogs",
-    icon: "📈",
-    query: "ipamorelin",
-    color: "#7c3aed",
-    colorBg: "#f5f3ff",
-  },
-  {
-    slug: "recovery",
-    label: "Recovery & Repair",
-    description: "Tissue repair, anti-inflammatory",
-    icon: "🔧",
-    query: "bpc-157",
-    color: "#0284c7",
-    colorBg: "#f0f9ff",
-  },
-  {
-    slug: "cosmetic",
-    label: "Cosmetic",
-    description: "Skin health, collagen, anti-aging",
-    icon: "✨",
-    query: "ghk-cu",
-    color: "#b45309",
-    colorBg: "#fffbeb",
-  },
-];
-
-const HOW_IT_WORKS = [
-  {
-    step: "01",
-    title: "Third-party lab testing",
-    body: "Finnrick independently tests peptides from vendors and publishes purity, quantity accuracy, and identity results. We import this data and display it alongside prices — never modified.",
-    color: "var(--brand-sky)",
-  },
-  {
-    step: "02",
-    title: "Price aggregation",
-    body: "We scrape vendor websites automatically every 15 minutes to keep pricing current. You see price per package alongside concentration so you can compare apples to apples.",
-    color: "var(--brand-teal)",
-  },
-  {
-    step: "03",
-    title: "Trust Score calculation",
-    body: "Our Trust Score (0–100) combines Finnrick lab quality, community reviews, and pricing signals into a single number. It is our derived metric — clearly distinguished from Finnrick's own ratings.",
-    color: "#7c3aed",
-  },
-];
-
-const TRUST_SIGNALS = [
-  { value: "5+", label: "Active vendors tracked" },
-  { value: "8+", label: "Peptides in catalog" },
-  { value: "A–E", label: "Finnrick grade scale" },
-  { value: "15 min", label: "Price refresh interval" },
-];
-
-// ── Page ─────────────────────────────────────────────────────────────────────
+import { prisma } from "@/lib/db/prisma";
+import { computeTrustScore, bestFinnrickGrade } from "@/lib/finnrick/trust-score";
+import { NewsFeed } from "@/components/home/news-feed";
+import { ArticleCard } from "@/components/home/article-card";
+import { GuideCard } from "@/components/home/guide-card";
+import { PeptideSnapshotCard } from "@/components/home/peptide-snapshot-card";
+import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
 
 export const metadata = {
-  title: "PeptidePal — Lab-Verified Peptide Price Comparison",
+  title: "PeptidePal — Peptide Research Hub",
   description:
-    "Compare peptide prices across vendors backed by third-party Finnrick lab testing data. Evidence-driven quality ratings and real-time pricing.",
+    "The independent peptide research hub. Latest news, vendor price comparisons, third-party lab data from Finnrick, and educational guides — all in one place.",
 };
 
-export default function HomePage() {
+// Revalidate at most every 5 minutes
+export const revalidate = 300;
+
+async function getHomepageData() {
+  const [featuredNews, editorsPicks, guides, peptides] = await Promise.all([
+    prisma.newsArticle.findMany({
+      where: { isHidden: false },
+      orderBy: { publishedAt: "desc" },
+      take: 8,
+      include: { source: { select: { name: true, slug: true, siteUrl: true } } },
+    }),
+    prisma.newsArticle.findMany({
+      where: { isHidden: false, isEditorsPick: true },
+      orderBy: { publishedAt: "desc" },
+      take: 3,
+      include: { source: { select: { name: true, slug: true, siteUrl: true } } },
+    }),
+    prisma.guide.findMany({
+      where: { isPublished: true },
+      orderBy: [{ category: "asc" }, { order: "asc" }],
+      take: 6,
+    }),
+    prisma.peptide.findMany({
+      include: {
+        prices: {
+          include: { vendor: { select: { name: true, slug: true } } },
+          orderBy: { price: "asc" },
+        },
+        reviews: { select: { rating: true } },
+        finnrickRatings: {
+          select: {
+            grade: true, averageScore: true, testCount: true,
+            minScore: true, maxScore: true,
+            oldestTestDate: true, newestTestDate: true,
+            finnrickUrl: true,
+            vendor: { select: { slug: true } },
+          },
+        },
+      },
+    }),
+  ]);
+
+  // Serialize news articles
+  const serializeArticle = (a: typeof featuredNews[0]) => ({
+    id: a.id,
+    title: a.title,
+    slug: a.slug,
+    sourceUrl: a.sourceUrl,
+    excerpt: a.excerpt ?? null,
+    author: a.author ?? null,
+    publishedAt: a.publishedAt.toISOString(),
+    tags: a.tags,
+    isEditorsPick: a.isEditorsPick,
+    isPinned: a.isPinned,
+    source: a.source,
+  });
+
+  // Build tag list from all fetched articles
+  const allTags = [...new Set(featuredNews.flatMap((a) => a.tags))].sort();
+
+  // Build trending peptide snapshots
+  const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+  const trendingPeptides = peptides
+    .map((p) => {
+      const avgRating =
+        p.reviews.length > 0
+          ? p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length
+          : 0;
+      const bestPrice = p.prices[0] ?? null;
+      const topGrade = bestFinnrickGrade(p.finnrickRatings);
+
+      let trustScore = null;
+      if (bestPrice) {
+        const finnrickForBest = p.finnrickRatings.find(
+          (r) => r.vendor.slug === bestPrice.vendor.slug,
+        );
+        const finnrickItem: FinnrickRatingItem | null = finnrickForBest
+          ? {
+              grade: finnrickForBest.grade as FinnrickGrade,
+              averageScore: Number(finnrickForBest.averageScore),
+              testCount: finnrickForBest.testCount,
+              minScore: Number(finnrickForBest.minScore),
+              maxScore: Number(finnrickForBest.maxScore),
+              oldestTestDate: finnrickForBest.oldestTestDate.toISOString(),
+              newestTestDate: finnrickForBest.newestTestDate.toISOString(),
+              finnrickUrl: finnrickForBest.finnrickUrl,
+            }
+          : null;
+
+        const prices = p.prices.map((pr) => Number(pr.price)).sort((a, b) => a - b);
+        const median = prices[Math.floor(prices.length / 2)] ?? null;
+
+        trustScore = computeTrustScore({
+          finnrickRating: finnrickItem,
+          averageReviewRating: avgRating,
+          reviewCount: p.reviews.length,
+          priceRelativeToMedian:
+            median && median > 0 ? Number(bestPrice.price) / median : undefined,
+        });
+      }
+
+      return {
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        description: p.description ?? null,
+        category: p.category ?? null,
+        bestPrice: bestPrice ? Number(bestPrice.price) : null,
+        bestPriceVendor: bestPrice?.vendor.name ?? null,
+        priceCount: p.prices.length,
+        bestFinnrickGrade: topGrade,
+        trustScore,
+        topVendors: p.prices.slice(0, 3).map((pr) => ({
+          vendorName: pr.vendor.name,
+          vendorSlug: pr.vendor.slug,
+          price: Number(pr.price),
+          currency: pr.currency,
+        })),
+      };
+    })
+    .sort(
+      (a, b) =>
+        (b.trustScore?.overall ?? 0) - (a.trustScore?.overall ?? 0) ||
+        (gradeOrder[b.bestFinnrickGrade ?? ""] ?? 0) -
+          (gradeOrder[a.bestFinnrickGrade ?? ""] ?? 0),
+    )
+    .slice(0, 4);
+
+  return {
+    featuredNews: featuredNews.map(serializeArticle),
+    editorsPicks: editorsPicks.map(serializeArticle),
+    guides: guides.map((g) => ({
+      id: g.id,
+      title: g.title,
+      slug: g.slug,
+      excerpt: g.excerpt,
+      category: g.category,
+      readingTime: g.readingTime,
+      order: g.order,
+    })),
+    trendingPeptides,
+    allTags,
+  };
+}
+
+export default async function HomePage() {
+  const { featuredNews, editorsPicks, guides, trendingPeptides, allTags } =
+    await getHomepageData();
+
+  // Non-editors-pick articles for the feed (exclude what's in editor's picks)
+  const editorIds = new Set(editorsPicks.map((a) => a.id));
+  const feedArticles = featuredNews.filter((a) => !editorIds.has(a.id));
+
   return (
     <div>
-      {/* ── Hero ───────────────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden py-20 sm:py-28"
+        className="relative overflow-hidden py-16 sm:py-20"
         style={{
           background:
             "linear-gradient(135deg, var(--brand-navy) 0%, #164e63 60%, #0d9488 100%)",
         }}
       >
-        {/* Subtle grid overlay */}
+        {/* Subtle dot grid */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-10"
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+              "radial-gradient(circle, #fff 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
           }}
           aria-hidden="true"
         />
@@ -104,29 +200,22 @@ export default function HomePage() {
           <div className="mx-auto max-w-2xl text-center">
             {/* Eyebrow */}
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90">
-              <span
-                className="flex h-2 w-2 rounded-full bg-emerald-400"
-                aria-hidden="true"
-              />
-              Backed by Finnrick third-party lab data
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+              Research hub · Lab data · Live prices
             </div>
 
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Peptide quality data
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              Your independent
               <br />
-              <span className="text-[#7dd3fc]">you can trust</span>
+              <span className="text-[#7dd3fc]">peptide research hub</span>
             </h1>
-            <p className="mt-5 text-lg text-white/75 sm:text-xl">
-              Compare vendor prices alongside independent lab purity, quantity
-              accuracy, and identity test results — all in one place.
+            <p className="mt-4 text-base text-white/75 sm:text-lg">
+              Latest peptide research news, Finnrick lab-testing data, and
+              live vendor prices — all in one place, with full source attribution.
             </p>
 
-            {/* Search bar */}
-            <form
-              action="/peptides"
-              method="get"
-              className="mt-8 flex gap-2 sm:gap-3"
-            >
+            {/* Search */}
+            <form action="/peptides" method="get" className="mt-7 flex gap-2">
               <label htmlFor="hero-search" className="sr-only">
                 Search peptides
               </label>
@@ -140,154 +229,227 @@ export default function HomePage() {
               />
               <button
                 type="submit"
-                className="shrink-0 rounded-xl px-5 py-3.5 text-sm font-semibold text-[var(--brand-navy)] transition hover:opacity-90"
-                style={{ background: "white" }}
+                className="shrink-0 rounded-xl bg-white px-5 py-3.5 text-sm font-semibold text-[var(--brand-navy)] transition hover:opacity-90"
               >
                 Search
               </button>
             </form>
 
-            {/* CTAs */}
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/peptides"
-                className="rounded-xl border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/20"
-              >
-                Browse all peptides →
-              </Link>
-              <Link
-                href="/about"
-                className="rounded-xl px-5 py-2.5 text-sm font-medium text-white/70 transition hover:text-white"
-              >
-                How it works
-              </Link>
+            {/* Quick links */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+              {[
+                { href: "/peptides", label: "Browse catalog" },
+                { href: "/vendors", label: "Vendor rankings" },
+                { href: "/about", label: "How it works" },
+              ].map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className="text-sm text-white/65 transition hover:text-white/90"
+                >
+                  {l.label} →
+                </Link>
+              ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Trust signal stats */}
-          <dl className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {TRUST_SIGNALS.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl border border-white/15 bg-white/10 px-4 py-4 text-center backdrop-blur-sm"
-              >
-                <dt className="text-2xl font-bold text-white">{s.value}</dt>
-                <dd className="mt-1 text-xs text-white/65">{s.label}</dd>
+      {/* ── Editor's Picks ───────────────────────────────────────────────── */}
+      {editorsPicks.length > 0 && (
+        <section className="py-12" style={{ background: "var(--surface-raised)" }}>
+          <div className="container-page">
+            <div className="mb-6 flex items-baseline justify-between">
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+                  Editor&apos;s Picks
+                </h2>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                  Notable research and regulatory updates
+                </p>
               </div>
-            ))}
-          </dl>
-        </div>
-      </section>
-
-      {/* ── Categories ─────────────────────────────────────────────────── */}
-      <section className="py-16">
-        <div className="container-page">
-          <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-              Browse by category
-            </h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              Find peptides grouped by common research application
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {CATEGORIES.map((cat) => (
               <Link
-                key={cat.slug}
-                href={`/peptides?search=${cat.query}`}
-                className="group flex flex-col gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
-                style={{ boxShadow: "var(--card-shadow)" }}
+                href="/news"
+                className="text-sm font-medium transition-colors hover:opacity-80"
+                style={{ color: "var(--accent)" }}
               >
-                <span
-                  className="flex h-10 w-10 items-center justify-center rounded-lg text-xl"
-                  style={{ background: cat.colorBg }}
-                  aria-hidden="true"
-                >
-                  {cat.icon}
-                </span>
-                <div>
-                  <p
-                    className="font-semibold text-sm leading-snug"
-                    style={{ color: "var(--foreground)" }}
-                  >
-                    {cat.label}
-                  </p>
-                  <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
-                    {cat.description}
-                  </p>
-                </div>
+                All news →
               </Link>
-            ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {editorsPicks.map((article) => (
+                <ArticleCard key={article.id} article={article} variant="featured" />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Main content: News + Sidebar ─────────────────────────────────── */}
+      <section className="py-12">
+        <div className="container-page">
+          <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+            {/* Left: News feed */}
+            <div>
+              <div className="mb-5 flex items-baseline justify-between">
+                <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+                  Latest Research News
+                </h2>
+                <span className="text-xs" style={{ color: "var(--muted)" }}>
+                  {feedArticles.length} articles
+                </span>
+              </div>
+              <NewsFeed articles={feedArticles} allTags={allTags} />
+            </div>
+
+            {/* Right: Sidebar */}
+            <aside className="space-y-8">
+              {/* Trending Peptides */}
+              {trendingPeptides.length > 0 && (
+                <div>
+                  <div className="mb-4 flex items-baseline justify-between">
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wide"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Trending Peptides
+                    </h3>
+                    <Link
+                      href="/peptides"
+                      className="text-xs font-medium"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      View all →
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {trendingPeptides.map((p) => (
+                      <PeptideSnapshotCard key={p.id} peptide={p} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Guides */}
+              {guides.length > 0 && (
+                <div>
+                  <div className="mb-4 flex items-baseline justify-between">
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wide"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      Learn
+                    </h3>
+                    <Link
+                      href="/guides"
+                      className="text-xs font-medium"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      All guides →
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    {guides.slice(0, 4).map((guide) => (
+                      <GuideCard key={guide.id} guide={guide} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Category shortcuts */}
+              <div>
+                <h3
+                  className="mb-3 text-sm font-bold uppercase tracking-wide"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  Browse by Category
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "GLP-1", href: "/peptides?search=semaglutide", emoji: "⚡" },
+                    { label: "Recovery", href: "/peptides?search=bpc-157", emoji: "🔧" },
+                    { label: "Growth Hormone", href: "/peptides?search=ipamorelin", emoji: "📈" },
+                    { label: "Cosmetic", href: "/peptides?search=ghk-cu", emoji: "✨" },
+                  ].map((cat) => (
+                    <Link
+                      key={cat.label}
+                      href={cat.href}
+                      className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 text-xs font-medium transition hover:bg-[var(--surface-raised)]"
+                      style={{ color: "var(--foreground-secondary)" }}
+                    >
+                      <span>{cat.emoji}</span>
+                      {cat.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* ── Featured peptides ──────────────────────────────────────────── */}
-      <section className="py-4 pb-16" style={{ background: "var(--surface-raised)" }}>
+      {/* ── How we source data ───────────────────────────────────────────── */}
+      <section className="py-12" style={{ background: "var(--surface-raised)" }}>
         <div className="container-page">
           <div className="mb-8 flex items-baseline justify-between">
             <div>
-              <h2 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-                All peptides
+              <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+                How we source data
               </h2>
-              <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-                Sorted by best Finnrick rating
+              <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                Transparent methodology — you should always know where numbers come from
               </p>
             </div>
             <Link
-              href="/peptides"
+              href="/about"
               className="text-sm font-medium transition-colors hover:opacity-80"
               style={{ color: "var(--accent)" }}
             >
-              View full catalog →
+              Full methodology →
             </Link>
           </div>
-          <Suspense
-            fallback={
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 6 }, (_, i) => (
-                  <div key={i} className="skeleton h-44 rounded-xl" />
-                ))}
-              </div>
-            }
-          >
-            <FeaturedPeptides />
-          </Suspense>
-        </div>
-      </section>
 
-      {/* ── How it works ───────────────────────────────────────────────── */}
-      <section className="py-16">
-        <div className="container-page">
-          <div className="mb-10 text-center">
-            <h2 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-              How we source data
-            </h2>
-            <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
-              Transparent methodology — you should always know where numbers come from
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
+          <div className="grid gap-5 sm:grid-cols-3">
+            {[
+              {
+                step: "01",
+                title: "Third-party lab testing",
+                body: "Finnrick independently tests vendor peptides and publishes purity, quantity accuracy, and identity results. We import and display this data — never modified.",
+                color: "var(--brand-sky)",
+              },
+              {
+                step: "02",
+                title: "Live price aggregation",
+                body: "We scrape vendor websites automatically every 15 minutes. You see price per package alongside concentration so you can compare apples to apples.",
+                color: "var(--brand-teal)",
+              },
+              {
+                step: "03",
+                title: "Trust Score",
+                body: "Our Trust Score (0–100) combines Finnrick lab quality (50%), community reviews (30%), and pricing signals (20%) into a single number.",
+                color: "#7c3aed",
+              },
+            ].map((item) => (
               <div
                 key={item.step}
-                className="relative rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-5"
                 style={{ boxShadow: "var(--card-shadow)" }}
               >
                 <span
-                  className="mb-4 inline-block text-xs font-bold tracking-widest uppercase"
+                  className="text-xs font-bold uppercase tracking-widest"
                   style={{ color: item.color }}
                 >
                   Step {item.step}
                 </span>
                 <h3
-                  className="text-base font-semibold"
+                  className="mt-2 text-sm font-semibold"
                   style={{ color: "var(--foreground)" }}
                 >
                   {item.title}
                 </h3>
                 <p
-                  className="mt-2 text-sm leading-relaxed"
+                  className="mt-1.5 text-xs leading-relaxed"
                   style={{ color: "var(--muted)" }}
                 >
                   {item.body}
@@ -295,30 +457,40 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <div className="mt-8 text-center">
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-medium transition-colors hover:bg-[var(--surface-raised)]"
-              style={{ color: "var(--foreground-secondary)" }}
-            >
-              Full methodology & disclaimers →
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* ── Bottom CTA ─────────────────────────────────────────────────── */}
+      {/* ── Medical disclaimer ───────────────────────────────────────────── */}
       <section
-        className="py-16"
+        className="border-t border-[var(--border)] py-6"
+        style={{ background: "var(--info-bg)" }}
+      >
+        <div className="container-page">
+          <p className="text-xs leading-relaxed" style={{ color: "var(--info-text)" }}>
+            <strong>Medical disclaimer:</strong> PeptidePal is an informational
+            resource only. Peptide research chemicals are not approved for human
+            use by the FDA unless otherwise noted. Nothing on this site
+            constitutes medical advice. Consult a qualified healthcare provider
+            before using any peptide or research chemical.{" "}
+            <Link href="/about" style={{ color: "var(--info-text)" }} className="underline">
+              Learn more →
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* ── Bottom CTA ───────────────────────────────────────────────────── */}
+      <section
+        className="py-14"
         style={{ background: "var(--brand-navy)", color: "white" }}
       >
         <div className="container-page text-center">
           <h2 className="text-2xl font-bold text-white">
-            Ready to compare vendors?
+            Compare vendors with confidence
           </h2>
           <p className="mt-3 text-sm text-white/70">
-            Browse all peptides, filter by Finnrick grade, and find the best
-            price-to-quality ratio.
+            Browse all peptides, filter by Finnrick lab grade, and find the
+            best price-to-quality ratio across every tracked vendor.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
@@ -332,6 +504,12 @@ export default function HomePage() {
               className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/20"
             >
               View Vendors
+            </Link>
+            <Link
+              href="/about"
+              className="rounded-xl px-6 py-3 text-sm font-medium text-white/65 transition hover:text-white/90"
+            >
+              How it works
             </Link>
           </div>
         </div>
