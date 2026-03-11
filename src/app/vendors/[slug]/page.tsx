@@ -6,6 +6,9 @@ import Link from "next/link";
 import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
 import { AvailabilityBadge } from "@/components/ui/badge";
 import { TestResultsTable } from "@/components/finnrick/test-results-table";
+import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
+import { MedicalDisclaimer } from "@/components/ui/info-banner";
+import { DataFreshnessBar } from "@/components/ui/data-freshness";
 import type { FinnrickGrade, FinnrickTestItem } from "@/types";
 
 interface FinnrickRatingSummary {
@@ -129,17 +132,19 @@ export default function VendorDetailPage() {
             )}
           </div>
 
-          {/* Best grade */}
-          <div className="text-right">
-            <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Best Finnrick grade
-            </p>
-            <div className="mt-1">
-              {vendor.bestFinnrickGrade ? (
-                <GradeBadge grade={vendor.bestFinnrickGrade} />
-              ) : (
-                <GradeBadgeEmpty />
-              )}
+          {/* Best grade + trust badge */}
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-right">
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
+                Best Finnrick grade
+              </p>
+              <div className="mt-1">
+                {vendor.bestFinnrickGrade ? (
+                  <GradeBadge grade={vendor.bestFinnrickGrade} />
+                ) : (
+                  <GradeBadgeEmpty />
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -359,11 +364,27 @@ export default function VendorDetailPage() {
         </div>
       </section>
 
-      {/* Disclaimer */}
-      <p className="mt-6 text-xs leading-relaxed" style={{ color: "var(--muted-light)" }}>
-        Finnrick grades are independent third-party lab data from finnrick.com — not PeptidePal
-        assessments. Prices update every 15 minutes. This is not medical advice.
-      </p>
+      {/* Trust badge + freshness row */}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <TrustBadge
+          type={deriveTrustBadge({
+            hasLabData: vendor.finnrickRatingCount > 0,
+            grade: vendor.bestFinnrickGrade ?? undefined,
+            testCount: vendor.totalTestCount,
+          })}
+          grade={vendor.bestFinnrickGrade ?? undefined}
+        />
+        {vendor.latestTestDate && (
+          <DataFreshnessBar
+            lastUpdated={vendor.latestTestDate}
+            refreshIntervalMinutes={60 * 24 * 7} // Finnrick data refreshes weekly
+            label="Lab data"
+          />
+        )}
+      </div>
+
+      {/* Medical disclaimer */}
+      <MedicalDisclaimer className="mt-6" />
     </div>
   );
 }

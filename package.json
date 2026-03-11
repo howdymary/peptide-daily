@@ -11,7 +11,11 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "worker:vendor": "npx tsx src/jobs/vendor-refresh-worker.ts"
+    "worker:vendor": "npx tsx src/jobs/vendor-refresh-worker.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "load-test": "npx tsx scripts/load-test.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
@@ -45,9 +49,11 @@
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.0",
     "@types/uuid": "^10.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }

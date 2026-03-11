@@ -52,11 +52,16 @@ export async function GET(req: NextRequest) {
         }),
 
         // Peptides with prices + Finnrick data
+        // Limit to top 20 by name so we don't load the entire table.
+        // We over-fetch slightly and sort in JS to find the best 4.
         prisma.peptide.findMany({
+          take: 20,
+          orderBy: { name: "asc" },
           include: {
             prices: {
               include: { vendor: { select: { name: true, slug: true } } },
               orderBy: { price: "asc" },
+              take: 5,
             },
             reviews: { select: { rating: true } },
             finnrickRatings: {

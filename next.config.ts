@@ -8,6 +8,11 @@ import type { NextConfig } from "next";
  *   CDN for static assets, and serverless function deployment automatically.
  * - On AWS: use `output: "standalone"` for Docker-based ECS/Fargate deployment.
  *   Static assets should be served via CloudFront CDN.
+ *
+ * Request body size limits:
+ * - The default Next.js body limit is 1 MB for /api/* routes.
+ * - Specific Zod schemas enforce per-endpoint content size caps
+ *   (e.g. finnrickImportSchema: 5 MB max for import payloads).
  */
 
 const nextConfig: NextConfig = {

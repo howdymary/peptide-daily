@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { SearchFilters } from "@/components/peptides/search-filters";
 import { PeptideList } from "@/components/peptides/peptide-list";
+import { CatalogGuideTip } from "@/components/ui/onboarding-tip";
 
 export const metadata = {
   title: "Peptide Catalog",
@@ -21,6 +22,9 @@ export default function PeptidesPage() {
           refresh every 15 minutes.
         </p>
       </div>
+
+      {/* Onboarding tip — collapsed once dismissed */}
+      <CatalogGuideTip className="mb-5" />
 
       {/* Filters */}
       <Suspense fallback={<div className="skeleton mb-6 h-20 rounded-xl" />}>

@@ -26,6 +26,7 @@ export const metadata = {
 export const revalidate = 300;
 
 async function getHomepageData() {
+  try {
   const [featuredNews, editorsPicks, guides, peptides] = await Promise.all([
     prisma.newsArticle.findMany({
       where: { isHidden: false },
@@ -165,6 +166,33 @@ async function getHomepageData() {
     trendingPeptides,
     allTags,
   };
+  } catch (err) {
+    // DB unavailable at build time (e.g. CI) — return empty data for static shell
+    console.warn("[Homepage] DB unavailable, rendering empty shell:", (err as Error).message);
+    return {
+      featuredNews: [] as {
+        id: string; title: string; slug: string; sourceUrl: string;
+        excerpt: string | null; author: string | null; publishedAt: string;
+        tags: string[]; isEditorsPick: boolean; isPinned: boolean;
+        source: { name: string; slug: string; siteUrl: string };
+      }[],
+      editorsPicks: [] as {
+        id: string; title: string; slug: string; sourceUrl: string;
+        excerpt: string | null; author: string | null; publishedAt: string;
+        tags: string[]; isEditorsPick: boolean; isPinned: boolean;
+        source: { name: string; slug: string; siteUrl: string };
+      }[],
+      guides: [] as { id: string; title: string; slug: string; excerpt: string; category: string; readingTime: number; order: number }[],
+      trendingPeptides: [] as {
+        id: string; name: string; slug: string; description: string | null;
+        category: string | null; bestPrice: number | null; bestPriceVendor: string | null;
+        priceCount: number; bestFinnrickGrade: string | null;
+        trustScore: import("@/types").TrustScore | null;
+        topVendors: { vendorName: string; vendorSlug: string; price: number; currency: string }[];
+      }[],
+      allTags: [] as string[],
+    };
+  }
 }
 
 export default async function HomePage() {
