@@ -95,7 +95,7 @@ export function PriceTable({ prices, peptideName, finnrickTests = {} }: PriceTab
                 <span className="flex items-center gap-1">
                   Finnrick
                   <InfoIcon
-                    tooltip="Third-party lab testing grade from finnrick.com. Independent of PeptidePal. A=Great, B=Good, C=Okay, D=Poor, E=Bad."
+                    tooltip="Third-party lab testing grade from finnrick.com. Independent of Peptide Daily. A=Great, B=Good, C=Okay, D=Poor, E=Bad."
                   />
                 </span>
               </th>
@@ -103,7 +103,7 @@ export function PriceTable({ prices, peptideName, finnrickTests = {} }: PriceTab
                 <span className="flex items-center gap-1">
                   Trust
                   <InfoIcon
-                    tooltip="PeptidePal's derived score (0–100) combining Finnrick data, community reviews, and pricing signals. Not Finnrick's own rating."
+                    tooltip="Peptide Daily's derived score (0–100) combining Finnrick data, community reviews, and pricing signals. Not Finnrick's own rating."
                   />
                 </span>
               </th>
@@ -256,7 +256,7 @@ export function PriceTable({ prices, peptideName, finnrickTests = {} }: PriceTab
         >
           finnrick.com
         </a>{" "}
-        and are independent of PeptidePal. Trust scores are PeptidePal&apos;s derived metric.
+        and are independent of Peptide Daily. Trust scores are Peptide Daily&apos;s derived metric.
         Prices update every 15 minutes. Not medical advice.
       </p>
     </div>

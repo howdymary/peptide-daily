@@ -5,14 +5,14 @@ import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "PeptidePal — Lab-Verified Peptide Price Comparison",
-    template: "%s — PeptidePal",
+    default: "Peptide Daily — Lab-Verified Peptide Price Comparison",
+    template: "%s — Peptide Daily",
   },
   description:
     "Compare peptide prices across vendors with third-party lab testing data from Finnrick. Evidence-driven quality ratings, community reviews, and real-time pricing.",
   keywords: ["peptides", "peptide comparison", "Finnrick ratings", "BPC-157", "semaglutide", "research chemicals", "lab testing"],
   openGraph: {
-    siteName: "PeptidePal",
+    siteName: "Peptide Daily",
     type: "website",
   },
 };

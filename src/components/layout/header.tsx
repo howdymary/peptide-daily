@@ -24,7 +24,7 @@ export function Header() {
         <Link
           href="/"
           className="flex items-center gap-2 text-lg font-bold tracking-tight"
-          aria-label="PeptidePal home"
+          aria-label="Peptide Daily home"
         >
           <span
             className="flex h-8 w-8 items-center justify-center rounded-lg text-white text-sm font-bold"
@@ -33,7 +33,7 @@ export function Header() {
           >
             PP
           </span>
-          <span style={{ color: "var(--brand-navy)" }}>PeptidePal</span>
+          <span style={{ color: "var(--brand-navy)" }}>Peptide Daily</span>
         </Link>
 
         {/* Desktop nav */}

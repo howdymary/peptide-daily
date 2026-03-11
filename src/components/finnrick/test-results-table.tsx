@@ -124,7 +124,7 @@ export function TestResultsTable({
                 Finnrick
               </a>
             )}{" "}
-            · Ratings are Finnrick&apos;s published values, not PeptidePal assessments.
+            · Ratings are Finnrick&apos;s published values, not Peptide Daily assessments.
           </div>
         </div>
       )}

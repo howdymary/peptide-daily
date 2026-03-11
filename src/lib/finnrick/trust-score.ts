@@ -1,7 +1,7 @@
 import type { FinnrickGrade, FinnrickRatingItem, TrustScore } from "@/types";
 
 /**
- * Computes PeptidePal's combined "trust score" (0–100) for a vendor+peptide offer.
+ * Computes Peptide Daily's combined "trust score" (0–100) for a vendor+peptide offer.
  *
  * Components:
  *  - Finnrick (default weight 0.50): official lab-testing grade from finnrick.com
@@ -11,7 +11,7 @@ import type { FinnrickGrade, FinnrickRatingItem, TrustScore } from "@/types";
  * When a component is absent its weight is redistributed proportionally to
  * whichever components ARE present.  If no components are present, null is returned.
  *
- * IMPORTANT: this score is labelled as PeptidePal-derived and never presented
+ * IMPORTANT: this score is labelled as Peptide Daily-derived and never presented
  * as Finnrick's own rating.  Raw Finnrick values are stored and displayed separately.
  */
 

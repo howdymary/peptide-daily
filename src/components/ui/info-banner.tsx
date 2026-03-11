@@ -145,7 +145,7 @@ export function InfoBanner({
 export function MedicalDisclaimer({ className = "" }: { className?: string }) {
   return (
     <InfoBanner variant="warning" title="Medical disclaimer" className={className}>
-      PeptidePal is an informational resource only. Peptide research chemicals
+      Peptide Daily is an informational resource only. Peptide research chemicals
       are not approved for human use unless otherwise noted. Nothing on this
       site constitutes medical advice. Always consult a qualified healthcare
       professional before using any peptide or research chemical.

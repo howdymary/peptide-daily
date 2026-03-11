@@ -1,4 +1,4 @@
-# PeptidePal — Technical Notes
+# Peptide Daily — Technical Notes
 
 Developer reference for the news ingestion pipeline, vendor scraping configuration, and data management workflows.
 
@@ -103,7 +103,7 @@ The worker:
 ### Rate limiting and ethical scraping
 
 - Each `NewsSource` has a `rateLimitMs` field (default 5000ms) — this delay is enforced **between sources**, not between articles within a source.
-- The RSS fetcher sends `User-Agent: PeptidePalBot/1.0 (+https://peptidepal.com/about)` on all requests.
+- The RSS fetcher sends `User-Agent: PeptideDailyBot/1.0 (+https://peptidedaily.com/about)` on all requests.
 - Articles are display as **excerpts with attribution links only** — no full-text republishing.
 - `robotsTxtAllows = false` completely prevents ingestion for that source.
 
@@ -326,7 +326,7 @@ REDIS_URL="redis://localhost:6379"
 
 # Auth
 NEXTAUTH_SECRET="..."
-NEXTAUTH_URL="https://peptidepal.com"
+NEXTAUTH_URL="https://peptidedaily.com"
 
 # News ingestion
 NEWS_INGESTION_INTERVAL_HOURS=4
@@ -337,11 +337,11 @@ FINNRICK_SYNC_INTERVAL_HOURS=6
 FINNRICK_BASE_URL="https://finnrick.com"
 
 # Vendor scraping
-SCRAPER_USER_AGENT="PeptidePalBot/1.0 (+https://peptidepal.com/about)"
+SCRAPER_USER_AGENT="PeptideDailyBot/1.0 (+https://peptidedaily.com/about)"
 SCRAPER_DEFAULT_RATE_LIMIT=10   # requests per minute
 
 # App
-NEXT_PUBLIC_BASE_URL="https://peptidepal.com"
+NEXT_PUBLIC_BASE_URL="https://peptidedaily.com"
 ```
 
 ---

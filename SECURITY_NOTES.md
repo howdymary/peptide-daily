@@ -1,4 +1,4 @@
-# PeptidePal — Security Notes
+# Peptide Daily — Security Notes
 
 Developer reference covering key risks, mitigations, and ongoing guidance for maintaining the security posture of the application.
 
@@ -6,7 +6,7 @@ Developer reference covering key risks, mitigations, and ongoing guidance for ma
 
 ## Threat Model Summary
 
-PeptidePal is a read-heavy price/review aggregator with user accounts and an admin panel. The primary attack surfaces are:
+Peptide Daily is a read-heavy price/review aggregator with user accounts and an admin panel. The primary attack surfaces are:
 
 | Surface | Risk |
 |---------|------|
@@ -185,7 +185,7 @@ Applied by `src/middleware.ts` on every response:
 
 ### Pending
 - DB connection pool limits (add `?connection_limit=10&pool_timeout=10` to `DATABASE_URL` in production).
-- Set Postgres statement timeout: `ALTER ROLE peptidepal SET statement_timeout = '20s'`.
+- Set Postgres statement timeout: `ALTER ROLE peptidedaily SET statement_timeout = '20s'`.
 - Deploy behind a CDN (Vercel Edge / CloudFront) for DDoS absorption on public read endpoints.
 
 ---

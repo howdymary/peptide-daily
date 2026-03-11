@@ -183,7 +183,7 @@ export interface PeptidePriceItem {
   lastUpdated: Date;
   /** Finnrick rating for this vendor+peptide (null if not available) */
   finnrickRating: FinnrickRatingItem | null;
-  /** PeptidePal-derived trust score (null if insufficient data) */
+  /** Peptide Daily-derived trust score (null if insufficient data) */
   trustScore: TrustScore | null;
 }
 

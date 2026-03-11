@@ -17,7 +17,7 @@ import { extractTags } from "./entity-extractor";
 import type { NormalizedArticle } from "./types";
 
 const USER_AGENT =
-  "PeptidePalBot/1.0 (+https://peptidepal.com/about) rss-aggregator/educational";
+  "PeptideDailyBot/1.0 (+https://peptidedaily.com/about) rss-aggregator/educational";
 
 const parser = new Parser({
   headers: { "User-Agent": USER_AGENT },

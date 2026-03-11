@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "How It Works",
   description:
-    "Learn how PeptidePal sources data — Finnrick third-party lab testing, vendor price aggregation, and the Trust Score methodology.",
+    "Learn how Peptide Daily sources data — Finnrick third-party lab testing, vendor price aggregation, and the Trust Score methodology.",
 };
 
 const GRADE_DESCRIPTIONS = [
@@ -21,7 +21,7 @@ export default function AboutPage() {
         {/* Page title */}
         <div className="mb-10">
           <h1 className="text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-            How PeptidePal Works
+            How Peptide Daily Works
           </h1>
           <p className="mt-2 text-base" style={{ color: "var(--muted)" }}>
             Transparent methodology behind every number and rating on this platform.
@@ -53,12 +53,12 @@ export default function AboutPage() {
                 Medical Disclaimer
               </h2>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--foreground-secondary)" }}>
-                PeptidePal is an <strong>informational resource only</strong>. We provide
+                Peptide Daily is an <strong>informational resource only</strong>. We provide
                 price comparison and third-party lab testing data for research purposes.
                 <strong> This is not medical advice.</strong> Peptides are research
                 chemicals; their safety and efficacy in humans has not been fully
                 established by regulatory agencies. Always consult a qualified healthcare
-                professional before using any peptide or research chemical. PeptidePal is
+                professional before using any peptide or research chemical. Peptide Daily is
                 not responsible for any decisions made based on information on this site.
               </p>
             </div>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                 is an independent third-party lab testing service that purchases peptides
                 from vendors and tests them for purity, quantity accuracy, identity, and
                 endotoxins. We import Finnrick&apos;s published ratings and display them
-                without modification. PeptidePal is not affiliated with Finnrick.
+                without modification. Peptide Daily is not affiliated with Finnrick.
               </p>
             </div>
             <div
@@ -109,7 +109,7 @@ export default function AboutPage() {
               </h3>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
                 Registered users can submit reviews for peptides. Reviews represent personal
-                subjective experiences. PeptidePal moderates reviews to remove spam and policy
+                subjective experiences. Peptide Daily moderates reviews to remove spam and policy
                 violations, but does not verify claims made in user reviews. Reviews are not
                 medical testimony.
               </p>
@@ -156,14 +156,14 @@ export default function AboutPage() {
         {/* Trust score */}
         <section id="trust-score" className="mb-10">
           <h2 className="mb-4 text-xl font-bold" style={{ color: "var(--foreground)" }}>
-            Trust Score (PeptidePal Metric)
+            Trust Score (Peptide Daily Metric)
           </h2>
           <div
             className="mb-4 rounded-xl p-4"
             style={{ background: "var(--info-bg)", border: "1px solid var(--info-border)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "var(--info)" }}>
-              Trust Score is PeptidePal&apos;s own derived metric — it is not Finnrick&apos;s rating.
+              Trust Score is Peptide Daily&apos;s own derived metric — it is not Finnrick&apos;s rating.
             </p>
           </div>
           <p className="mb-4 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
@@ -208,7 +208,7 @@ export default function AboutPage() {
             Contact & Feedback
           </h2>
           <p className="text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Found a data error, missing vendor, or quality concern? PeptidePal is a
+            Found a data error, missing vendor, or quality concern? Peptide Daily is a
             community-driven project. We welcome feedback on data accuracy. Vendor listing
             requests and Finnrick sync issues should be reported so we can investigate.
           </p>

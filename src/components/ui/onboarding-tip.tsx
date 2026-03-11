@@ -160,7 +160,7 @@ export function TrustScoreTip({ className = "" }: { className?: string }) {
   return (
     <OnboardingTip id="trust-score-v1" title="What is the Trust Score?" className={className}>
       <p>
-        The <strong>Trust Score (0–100)</strong> is PeptidePal&apos;s derived metric.
+        The <strong>Trust Score (0–100)</strong> is Peptide Daily&apos;s derived metric.
         It combines three signals:
       </p>
       <ul className="mt-2 space-y-1 pl-4 list-disc">

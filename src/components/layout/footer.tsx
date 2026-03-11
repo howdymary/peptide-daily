@@ -38,7 +38,7 @@ export function Footer() {
             className="text-center text-xs leading-relaxed"
             style={{ color: "var(--info)" }}
           >
-            <strong>Medical Disclaimer:</strong> PeptidePal provides price and
+            <strong>Medical Disclaimer:</strong> Peptide Daily provides price and
             lab-testing data for informational purposes only. This is not medical
             advice. Peptides are research chemicals; consult a qualified
             healthcare professional before use. Finnrick ratings are
@@ -51,7 +51,7 @@ export function Footer() {
             >
               finnrick.com
             </a>{" "}
-            and are not endorsed or modified by PeptidePal.
+            and are not endorsed or modified by Peptide Daily.
           </p>
         </div>
       </div>
@@ -64,7 +64,7 @@ export function Footer() {
             <Link
               href="/"
               className="flex items-center gap-2 text-base font-bold"
-              aria-label="PeptidePal home"
+              aria-label="Peptide Daily home"
             >
               <span
                 className="flex h-7 w-7 items-center justify-center rounded-md text-white text-xs font-bold"
@@ -72,7 +72,7 @@ export function Footer() {
               >
                 PP
               </span>
-              <span style={{ color: "var(--brand-navy)" }}>PeptidePal</span>
+              <span style={{ color: "var(--brand-navy)" }}>Peptide Daily</span>
             </Link>
             <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
               Lab-verified peptide quality data and price comparison for
@@ -171,7 +171,7 @@ export function Footer() {
           className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[var(--border)] pt-6 text-xs sm:flex-row"
           style={{ color: "var(--muted-light)" }}
         >
-          <p>© {year} PeptidePal. All rights reserved.</p>
+          <p>© {year} Peptide Daily. All rights reserved.</p>
           <p>
             Lab data sourced from{" "}
             <a

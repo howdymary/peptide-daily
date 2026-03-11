@@ -1,4 +1,4 @@
-# PeptidePal — UX & Trust Design Notes
+# Peptide Daily — UX & Trust Design Notes
 
 Reference guide for the trust-building design patterns, component library, and onboarding system.
 
@@ -20,11 +20,11 @@ The site uses a layered trust system to communicate data quality:
 ```
 Layer 1 — Grade badge    (Finnrick's own A–E classification)
 Layer 2 — Trust badge    (derived: lab-tested / high-confidence / limited-data / no-rating)
-Layer 3 — Trust Score    (PeptidePal's 0–100 composite metric)
+Layer 3 — Trust Score    (Peptide Daily's 0–100 composite metric)
 Layer 4 — Data freshness (when were prices / lab tests last updated)
 ```
 
-Each layer is **clearly labelled as to its origin**: Finnrick's data is always attributed to Finnrick; PeptidePal's derived metrics are clearly labelled as such.
+Each layer is **clearly labelled as to its origin**: Finnrick's data is always attributed to Finnrick; Peptide Daily's derived metrics are clearly labelled as such.
 
 ---
 
@@ -178,7 +178,7 @@ A core UX principle: users must always be able to trace a number back to its ori
 | Element | Attribution |
 |---------|-------------|
 | Grade badge (A–E) | "Finnrick rating" label, links to finnrick.com |
-| Trust Score | "PeptidePal's metric" — explicitly not Finnrick's |
+| Trust Score | "Peptide Daily's metric" — explicitly not Finnrick's |
 | Prices | "Updated every 15 min" freshness indicator |
 | User reviews | Star rating with review count |
 | News articles | Source name + external link + excerpt only (no full republishing) |

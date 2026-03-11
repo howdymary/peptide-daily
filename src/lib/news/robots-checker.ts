@@ -6,14 +6,14 @@
  *
  * Approach:
  *   1. Fetch /robots.txt from the site origin.
- *   2. Parse Disallow rules for "*" and "PeptidePalBot".
+ *   2. Parse Disallow rules for "*" and "PeptideDailyBot".
  *   3. Return true if the feed path is not disallowed.
  *
  * Conservative: if robots.txt is unreachable or unparseable we assume ALLOWED
  * (the site likely has no restrictions) but log a warning.
  */
 
-const USER_AGENT = "PeptidePalBot/1.0 (+https://peptidepal.com/about)";
+const USER_AGENT = "PeptideDailyBot/1.0 (+https://peptidedaily.com/about)";
 
 /**
  * Returns true if the given feedUrl is allowed by the site's robots.txt.
@@ -43,7 +43,7 @@ export async function checkRobotsTxt(siteUrl: string, feedPath: string): Promise
 
 /**
  * Parse robots.txt text and return whether `path` is allowed.
- * Handles User-agent: * and User-agent: PeptidePalBot sections.
+ * Handles User-agent: * and User-agent: PeptideDailyBot sections.
  */
 function isPathAllowed(robotsTxt: string, path: string): boolean {
   const lines = robotsTxt.split(/\r?\n/).map((l) => l.trim());
@@ -58,7 +58,7 @@ function isPathAllowed(robotsTxt: string, path: string): boolean {
 
     if (/^user-agent\s*:/i.test(line)) {
       const agent = line.replace(/^user-agent\s*:\s*/i, "").trim().toLowerCase();
-      inRelevantBlock = agent === "*" || agent === "peptidepalbot";
+      inRelevantBlock = agent === "*" || agent === "peptidedailybot";
       continue;
     }
 

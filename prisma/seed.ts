@@ -531,7 +531,7 @@ async function main() {
     },
     {
       slug: "comparing-vendor-trust-scores",
-      title: "How PeptidePal Trust Scores Are Calculated",
+      title: "How Peptide Daily Trust Scores Are Calculated",
       excerpt:
         "The Trust Score (0–100) is our composite quality metric. This guide breaks down the three components — Finnrick lab data, community reviews, and pricing signals — and explains the weighting model.",
       category: "ratings",

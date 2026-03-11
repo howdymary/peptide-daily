@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * Lightweight load test for PeptidePal API endpoints.
+ * Lightweight load test for Peptide Daily API endpoints.
  *
  * Uses Node.js built-in fetch (Node 18+) — no extra dependencies.
  *
@@ -114,7 +114,7 @@ async function runScenario(scenario: Scenario): Promise<Stats> {
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log(`\nPeptidePal Load Test`);
+  console.log(`\nPeptide Daily Load Test`);
   console.log(`  Base URL:    ${BASE_URL}`);
   console.log(`  Concurrency: ${CONCURRENCY} VUs per scenario`);
   console.log(`  Duration:    ${DURATION_SECS}s per scenario`);

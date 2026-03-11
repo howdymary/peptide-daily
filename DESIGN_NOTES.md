@@ -1,8 +1,8 @@
-# PeptidePal — Design Notes
+# Peptide Daily — Design Notes
 
 ## Brand & Positioning
 
-PeptidePal is positioned as a **consumer health / evidence-driven product** — closer to
+Peptide Daily is positioned as a **consumer health / evidence-driven product** — closer to
 Function Health or Levels Health than a supplement storefront. The visual language
 emphasizes trust, scientific rigor, transparency, and safety.
 
@@ -10,7 +10,7 @@ emphasizes trust, scientific rigor, transparency, and safety.
 
 1. **Transparency over persuasion** — always make data provenance explicit. Finnrick
    grades are clearly labeled as third-party, independent data. Trust Scores are explicitly
-   PeptidePal's derived metric.
+   Peptide Daily's derived metric.
 
 2. **Evidence first** — lab data (Finnrick) is the primary signal in all price
    comparisons. Price is important, but quality evidence leads.
@@ -167,7 +167,7 @@ automatically. Assign `category` to one of the existing values for proper catego
 2. Create a `RatingBadge` component analogous to `GradeBadge`
 3. Add a `XxxScore` column to `PriceTable`
 4. Update `PeptideDetail` and API routes to include the new data
-5. Document provenance clearly — never conflate third-party data with PeptidePal's own metrics
+5. Document provenance clearly — never conflate third-party data with Peptide Daily's own metrics
 
 ### Dark mode
 All color tokens have dark mode overrides in the `@media (prefers-color-scheme: dark)` block

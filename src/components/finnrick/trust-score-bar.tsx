@@ -30,7 +30,7 @@ export function TrustScoreBar({
   const { overall, finnrickScore, reviewScore, pricingScore, breakdown } = trustScore;
 
   const tooltipParts = [
-    `PeptidePal Trust Score: ${overall}/100 (${scoreLabel(overall)})`,
+    `Peptide Daily Trust Score: ${overall}/100 (${scoreLabel(overall)})`,
     finnrickScore != null
       ? `Lab testing: ${finnrickScore} (${Math.round(breakdown.finnrickWeight * 100)}% weight)`
       : "Lab testing: no data",
@@ -40,7 +40,7 @@ export function TrustScoreBar({
     pricingScore != null
       ? `Pricing signal: ${pricingScore} (${Math.round(breakdown.pricingWeight * 100)}%)`
       : null,
-    "This is PeptidePal's derived score, not Finnrick's rating.",
+    "This is Peptide Daily's derived score, not Finnrick's rating.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -53,7 +53,7 @@ export function TrustScoreBar({
     <div
       className="flex items-center gap-2"
       title={showBreakdown ? tooltipParts : `Trust score: ${overall}/100`}
-      aria-label={`PeptidePal trust score: ${overall} out of 100 — ${scoreLabel(overall)}`}
+      aria-label={`Peptide Daily trust score: ${overall} out of 100 — ${scoreLabel(overall)}`}
     >
       <div
         className={`relative ${barHeight} ${barWidth} overflow-hidden rounded-full`}

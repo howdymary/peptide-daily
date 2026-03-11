@@ -60,7 +60,7 @@ export const env = {
   FINNRICK_BASE_URL: optional("FINNRICK_BASE_URL", "https://finnrick.com"),
 
   // Scraper
-  SCRAPER_USER_AGENT: optional("SCRAPER_USER_AGENT", "PeptidePal-Aggregator/1.0"),
+  SCRAPER_USER_AGENT: optional("SCRAPER_USER_AGENT", "Peptide Daily-Aggregator/1.0"),
   SCRAPER_DEFAULT_RATE_LIMIT: parseInt(
     optional("SCRAPER_DEFAULT_RATE_LIMIT", "10"),
     10,

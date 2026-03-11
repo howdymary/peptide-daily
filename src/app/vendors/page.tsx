@@ -191,7 +191,7 @@ export default function VendorsPage() {
             finnrick.com
           </a>
           . Grades (A–E) reflect purity, quantity accuracy, and identity test results.
-          PeptidePal imports and displays this data without modification. Grades are per
+          Peptide Daily imports and displays this data without modification. Grades are per
           peptide; the grade shown here is the best grade across all peptides tested for
           that vendor.
         </p>

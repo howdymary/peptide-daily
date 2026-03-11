@@ -17,7 +17,7 @@ import { PeptideSnapshotCard } from "@/components/home/peptide-snapshot-card";
 import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
 
 export const metadata = {
-  title: "PeptidePal — Peptide Research Hub",
+  title: "Peptide Daily — Peptide Research Hub",
   description:
     "The independent peptide research hub. Latest news, vendor price comparisons, third-party lab data from Finnrick, and educational guides — all in one place.",
 };
@@ -495,7 +495,7 @@ export default async function HomePage() {
       >
         <div className="container-page">
           <p className="text-xs leading-relaxed" style={{ color: "var(--info-text)" }}>
-            <strong>Medical disclaimer:</strong> PeptidePal is an informational
+            <strong>Medical disclaimer:</strong> Peptide Daily is an informational
             resource only. Peptide research chemicals are not approved for human
             use by the FDA unless otherwise noted. Nothing on this site
             constitutes medical advice. Consult a qualified healthcare provider

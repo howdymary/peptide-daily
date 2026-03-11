@@ -78,7 +78,7 @@ export function NewsFeed({ articles, allTags }: NewsFeedProps) {
         className="mt-5 text-xs leading-relaxed"
         style={{ color: "var(--muted-light)" }}
       >
-        Articles link to original sources. PeptidePal displays excerpts only
+        Articles link to original sources. Peptide Daily displays excerpts only
         and does not republish full content. Sources: PubMed, FDA, NIH, Science Daily.
       </p>
     </div>
