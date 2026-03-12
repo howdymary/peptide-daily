@@ -414,19 +414,11 @@ export default async function HomePage() {
                     <Link
                       key={cat.label}
                       href={cat.href}
-                      className="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors"
+                      className="category-nav-btn flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium transition-colors"
                       style={{
                         borderColor: "var(--border)",
                         background: "var(--surface)",
                         color: "var(--foreground-secondary)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "var(--surface-raised)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "var(--surface)";
                       }}
                     >
                       <span className="text-base" aria-hidden="true">{cat.icon}</span>
@@ -608,19 +600,11 @@ export default async function HomePage() {
               </Link>
               <Link
                 href="/vendors"
-                className="rounded-lg border px-6 py-3 text-sm font-medium text-white transition-colors"
+                className="cta-ghost-btn rounded-lg border px-6 py-3 text-sm font-medium text-white transition-colors"
                 style={{
                   borderColor: "rgb(255 255 255 / 0.25)",
                   color: "rgb(255 255 255 / 0.85)",
                 }}
-                onMouseEnter={(e) =>
-                  ((e.currentTarget as HTMLElement).style.borderColor =
-                    "rgb(255 255 255 / 0.45)")
-                }
-                onMouseLeave={(e) =>
-                  ((e.currentTarget as HTMLElement).style.borderColor =
-                    "rgb(255 255 255 / 0.25)")
-                }
               >
                 View Vendors
               </Link>

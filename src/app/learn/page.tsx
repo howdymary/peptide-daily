@@ -51,22 +51,12 @@ function PeptideCard({ peptide }: { peptide: PeptideContent }) {
   return (
     <Link
       href={`/learn/${peptide.slug}`}
-      className="group flex flex-col rounded-xl border overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+      className="hover-lift group flex flex-col rounded-xl border overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
         boxShadow: "var(--card-shadow)",
         textDecoration: "none",
-        transition: "transform 0.15s ease, box-shadow 0.15s ease",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-        (e.currentTarget as HTMLElement).style.boxShadow =
-          "var(--card-shadow-hover)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-        (e.currentTarget as HTMLElement).style.boxShadow = "var(--card-shadow)";
       }}
     >
       {/* Top accent based on regulatory status */}

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
 import { TrustScoreBar, TrustScoreBarEmpty } from "@/components/finnrick/trust-score-bar";
