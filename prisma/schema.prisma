@@ -177,23 +177,23 @@ enum FinnrickGrade {
 /// Aggregate Finnrick rating for a specific vendor+peptide pair.
 /// Raw Finnrick values — never modified by our scoring logic.
 model FinnrickVendorRating {
-  id              String        @id @default(cuid())
-  vendorId        String        @map("vendor_id")
-  peptideId       String        @map("peptide_id")
-  grade           FinnrickGrade
-  averageScore    Decimal       @db.Decimal(4, 1) @map("average_score")
-  testCount       Int           @map("test_count")
-  minScore        Decimal       @db.Decimal(4, 1) @map("min_score")
-  maxScore        Decimal       @db.Decimal(4, 1) @map("max_score")
-  oldestTestDate  DateTime      @map("oldest_test_date")
-  newestTestDate  DateTime      @map("newest_test_date")
-  finnrickUrl     String?       @map("finnrick_url")
-  importBatchId   String        @map("import_batch_id")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  vendorId       String        @map("vendor_id")
+  peptideId      String        @map("peptide_id")
+  grade          FinnrickGrade
+  averageScore   Decimal       @map("average_score") @db.Decimal(4, 1)
+  testCount      Int           @map("test_count")
+  minScore       Decimal       @map("min_score") @db.Decimal(4, 1)
+  maxScore       Decimal       @map("max_score") @db.Decimal(4, 1)
+  oldestTestDate DateTime      @map("oldest_test_date")
+  newestTestDate DateTime      @map("newest_test_date")
+  finnrickUrl    String?       @map("finnrick_url")
+  importBatchId  String        @map("import_batch_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  vendor  Vendor              @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  peptide Peptide             @relation(fields: [peptideId], references: [id], onDelete: Cascade)
+  vendor  Vendor               @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  peptide Peptide              @relation(fields: [peptideId], references: [id], onDelete: Cascade)
   tests   FinnrickTestResult[]
 
   @@unique([vendorId, peptideId])
@@ -209,10 +209,10 @@ model FinnrickTestResult {
   id                 String   @id @default(cuid())
   ratingId           String   @map("rating_id")
   testDate           DateTime @map("test_date")
-  testScore          Decimal  @db.Decimal(4, 1) @map("test_score")
-  advertisedQuantity Decimal  @db.Decimal(8, 2) @map("advertised_quantity")
-  actualQuantity     Decimal  @db.Decimal(8, 2) @map("actual_quantity")
-  quantityVariance   Decimal  @db.Decimal(6, 2) @map("quantity_variance")
+  testScore          Decimal  @map("test_score") @db.Decimal(4, 1)
+  advertisedQuantity Decimal  @map("advertised_quantity") @db.Decimal(8, 2)
+  actualQuantity     Decimal  @map("actual_quantity") @db.Decimal(8, 2)
+  quantityVariance   Decimal  @map("quantity_variance") @db.Decimal(6, 2)
   purity             Decimal  @db.Decimal(5, 2)
   batchId            String   @map("batch_id")
   containerType      String   @map("container_type")
@@ -249,22 +249,43 @@ model FinnrickImport {
 }
 
 /// Maps our Vendor records to Finnrick vendor entries and configures scraping.
+/// Also tracks per-source health metrics so the admin dashboard can surface
+/// stale or erroring vendor data sources quickly.
+///
+/// TECH_NOTES — Health metrics:
+///   lastScrapedAt    — set by the aggregator after each successful run
+///   activeProducts   — count of in_stock prices for this vendor
+///   scraperErrorCount — cumulative errors; reset when scraping re-activates
+///   lastScraperError  — most recent error message for debugging
+///   vendorType        — "research" | "cosmetic" | "pharmaceutical" | "catalog"
+///   statusFlag        — "active" | "paused" | "manual-only" | "js-required" | "disabled"
 model VendorMapping {
-  id               String   @id @default(cuid())
-  vendorId         String   @unique @map("vendor_id")
-  finnrickSlug     String   @unique @map("finnrick_slug")
-  vendorDomain     String?  @map("vendor_domain")
-  scrapingEnabled  Boolean  @default(false) @map("scraping_enabled")
-  scrapingAdapter  String?  @map("scraping_adapter")
-  rateLimit        Int      @default(10) @map("rate_limit")
-  notes            String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  vendorId          String    @unique @map("vendor_id")
+  finnrickSlug      String    @unique @map("finnrick_slug")
+  vendorDomain      String?   @map("vendor_domain")
+  scrapingEnabled   Boolean   @default(false) @map("scraping_enabled")
+  scrapingAdapter   String?   @map("scraping_adapter")
+  rateLimit         Int       @default(10) @map("rate_limit")
+  notes             String?
+  /// Vendor category: research | cosmetic | pharmaceutical | catalog
+  vendorType        String    @default("research") @map("vendor_type")
+  /// Operational status: active | paused | manual-only | js-required | disabled
+  statusFlag        String    @default("active") @map("status_flag")
+  // ── Health metrics (updated by aggregator) ─────────────────────────────
+  lastScrapedAt     DateTime? @map("last_scraped_at")
+  activeProducts    Int       @default(0) @map("active_products")
+  scraperErrorCount Int       @default(0) @map("scraper_error_count")
+  lastScraperError  String?   @map("last_scraper_error") @db.Text
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   @@index([finnrickSlug])
   @@index([vendorDomain])
+  @@index([statusFlag])
+  @@index([lastScrapedAt])
   @@map("vendor_mappings")
 }
 
@@ -289,7 +310,7 @@ model NewsSource {
   description     String?
   lastFetchedAt   DateTime? @map("last_fetched_at")
   lastFetchStatus String?   @map("last_fetch_status")
-  lastFetchError  String?   @db.Text @map("last_fetch_error")
+  lastFetchError  String?   @map("last_fetch_error") @db.Text
   fetchCount      Int       @default(0) @map("fetch_count")
   errorCount      Int       @default(0) @map("error_count")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -304,21 +325,21 @@ model NewsSource {
 /// A normalized news article ingested from a NewsSource.
 /// source_url is the dedup key — re-ingesting the same URL is a no-op.
 model NewsArticle {
-  id            String    @id @default(cuid())
-  sourceId      String    @map("source_id")
+  id            String   @id @default(cuid())
+  sourceId      String   @map("source_id")
   title         String
-  slug          String    @unique
-  sourceUrl     String    @unique @map("source_url")
-  excerpt       String?   @db.Text
+  slug          String   @unique
+  sourceUrl     String   @unique @map("source_url")
+  excerpt       String?  @db.Text
   author        String?
-  publishedAt   DateTime  @map("published_at")
+  publishedAt   DateTime @map("published_at")
   /// Peptide names, themes, and topic tags extracted from title/excerpt.
   tags          String[]
-  isPinned      Boolean   @default(false) @map("is_pinned")
-  isHidden      Boolean   @default(false) @map("is_hidden")
-  isEditorsPick Boolean   @default(false) @map("is_editors_pick")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  isPinned      Boolean  @default(false) @map("is_pinned")
+  isHidden      Boolean  @default(false) @map("is_hidden")
+  isEditorsPick Boolean  @default(false) @map("is_editors_pick")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   source NewsSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 

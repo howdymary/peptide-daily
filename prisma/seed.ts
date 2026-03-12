@@ -72,7 +72,57 @@ async function main() {
     },
   });
 
-  const vendors = [vp, pp, paradigm, polaris, skye];
+  const aminoAsylum = await prisma.vendor.upsert({
+    where: { name: "Amino Asylum" },
+    update: {},
+    create: {
+      name: "Amino Asylum",
+      slug: "amino-asylum",
+      website: "https://aminoasylum.shop",
+    },
+  });
+
+  const pureRawz = await prisma.vendor.upsert({
+    where: { name: "Pure Rawz" },
+    update: {},
+    create: {
+      name: "Pure Rawz",
+      slug: "pure-rawz",
+      website: "https://purerawz.co",
+    },
+  });
+
+  const biotechPeptides = await prisma.vendor.upsert({
+    where: { name: "Biotech Peptides" },
+    update: {},
+    create: {
+      name: "Biotech Peptides",
+      slug: "biotech-peptides",
+      website: "https://biotechpeptides.com",
+    },
+  });
+
+  const sportsTechLabs = await prisma.vendor.upsert({
+    where: { name: "Sports Technology Labs" },
+    update: {},
+    create: {
+      name: "Sports Technology Labs",
+      slug: "sports-technology-labs",
+      website: "https://sportstechnologylabs.com",
+    },
+  });
+
+  const peptideSciences = await prisma.vendor.upsert({
+    where: { name: "Peptide Sciences" },
+    update: {},
+    create: {
+      name: "Peptide Sciences",
+      slug: "peptide-sciences",
+      website: "https://www.peptidesciences.com",
+    },
+  });
+
+  const vendors = [vp, pp, paradigm, polaris, skye, aminoAsylum, pureRawz, biotechPeptides, sportsTechLabs, peptideSciences];
 
   // ── Peptides ──────────────────────────────────────────────────────────────
 
@@ -175,13 +225,24 @@ async function main() {
 
   // ── Vendor Mappings ───────────────────────────────────────────────────────
 
-  const mappings = [
+  const mappings: {
+    vendor: { id: string };
+    finnrickSlug: string;
+    vendorDomain: string;
+    scrapingEnabled: boolean;
+    scrapingAdapter?: string;
+    vendorType?: string;
+    statusFlag?: string;
+    notes?: string;
+  }[] = [
     {
       vendor: vp,
       finnrickSlug: "verified-peptides",
       vendorDomain: "verifiedpeptides.com",
       scrapingEnabled: true,
       scrapingAdapter: "VerifiedPeptidesFetcher",
+      vendorType: "research",
+      statusFlag: "active",
     },
     {
       vendor: pp,
@@ -189,6 +250,8 @@ async function main() {
       vendorDomain: "peptide.partners",
       scrapingEnabled: false,
       scrapingAdapter: "PeptidePartnersFetcher",
+      vendorType: "research",
+      statusFlag: "manual-only",
       notes: "JS-rendered SPA — manual import only",
     },
     {
@@ -197,6 +260,8 @@ async function main() {
       vendorDomain: "paradigmpeptide.com",
       scrapingEnabled: true,
       scrapingAdapter: "ParadigmPeptideFetcher",
+      vendorType: "research",
+      statusFlag: "active",
     },
     {
       vendor: polaris,
@@ -204,6 +269,8 @@ async function main() {
       vendorDomain: "polarispeptides.com",
       scrapingEnabled: true,
       scrapingAdapter: "PolarisPeptidesFetcher",
+      vendorType: "research",
+      statusFlag: "active",
     },
     {
       vendor: skye,
@@ -211,7 +278,54 @@ async function main() {
       vendorDomain: "skyepeptides.com",
       scrapingEnabled: false,
       scrapingAdapter: "SkyePeptidesFetcher",
-      notes: "JS-rendered — manual import only",
+      vendorType: "research",
+      statusFlag: "js-required",
+      notes: "Shopify JS-rendered prices — needs Playwright adapter",
+    },
+    {
+      vendor: aminoAsylum,
+      finnrickSlug: "amino-asylum",
+      vendorDomain: "aminoasylum.shop",
+      scrapingEnabled: true,
+      scrapingAdapter: "AminoAsylumFetcher",
+      vendorType: "research",
+      statusFlag: "active",
+    },
+    {
+      vendor: pureRawz,
+      finnrickSlug: "pure-rawz",
+      vendorDomain: "purerawz.co",
+      scrapingEnabled: true,
+      scrapingAdapter: "PureRawzFetcher",
+      vendorType: "research",
+      statusFlag: "active",
+    },
+    {
+      vendor: biotechPeptides,
+      finnrickSlug: "biotech-peptides",
+      vendorDomain: "biotechpeptides.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "BiotechPeptidesFetcher",
+      vendorType: "research",
+      statusFlag: "active",
+    },
+    {
+      vendor: sportsTechLabs,
+      finnrickSlug: "sports-technology-labs",
+      vendorDomain: "sportstechnologylabs.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "SportsTechnologyLabsFetcher",
+      vendorType: "research",
+      statusFlag: "active",
+    },
+    {
+      vendor: peptideSciences,
+      finnrickSlug: "peptide-sciences",
+      vendorDomain: "peptidesciences.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "PeptideSciencesFetcher",
+      vendorType: "research",
+      statusFlag: "active",
     },
   ];
 
@@ -223,6 +337,8 @@ async function main() {
         vendorDomain: m.vendorDomain,
         scrapingEnabled: m.scrapingEnabled,
         scrapingAdapter: m.scrapingAdapter ?? null,
+        vendorType: m.vendorType ?? "research",
+        statusFlag: m.statusFlag ?? "active",
         notes: m.notes ?? null,
       },
       create: {
@@ -231,6 +347,8 @@ async function main() {
         vendorDomain: m.vendorDomain,
         scrapingEnabled: m.scrapingEnabled,
         scrapingAdapter: m.scrapingAdapter ?? null,
+        vendorType: m.vendorType ?? "research",
+        statusFlag: m.statusFlag ?? "active",
         rateLimit: 6,
         notes: m.notes ?? null,
       },
@@ -431,10 +549,18 @@ async function main() {
   );
 
   // ── News Sources ─────────────────────────────────────────────────────────
-  // All sources use public RSS/Atom feeds.  We display attribution + links only
-  // and never republish full article text.  robots.txt is checked at runtime.
+  // All sources use public RSS/Atom feeds.  We display attribution + excerpt
+  // links only — we never republish full article text.
+  // robots.txt compliance is verified at runtime by refreshRobotsTxtStatus().
+  //
+  // TECH_NOTES — Adding/removing sources:
+  //   1. Add or set isActive: false here and re-run: npx tsx prisma/seed.ts
+  //   2. The ingestion pipeline picks up only isActive=true & robotsTxtAllows=true rows.
+  //   3. Health metrics (lastFetchedAt, errorCount) update automatically each run.
+  //   4. Favor RSS/Atom feeds over HTML scraping for stability.
 
   const newsSources = [
+    // ── PubMed research feeds (NIH/NLM — open access, public RSS) ─────────
     {
       name: "PubMed — Peptide Research",
       slug: "pubmed-peptides",
@@ -457,6 +583,38 @@ async function main() {
       rateLimitMs: 3000,
     },
     {
+      name: "PubMed — Cosmetic Peptides",
+      slug: "pubmed-cosmetic-peptides",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=cosmetic+peptide+skin+aging&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description: "Research on skin-active and cosmetic peptides (GHK-Cu, Matrixyl, etc.).",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "PubMed — Recovery Peptides",
+      slug: "pubmed-recovery-peptides",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=BPC-157+thymosin+beta+tissue+repair&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description: "Research on BPC-157, TB-500, and other recovery-focused peptides.",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "PubMed — Growth Hormone Peptides",
+      slug: "pubmed-gh-peptides",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=growth+hormone+secretagogue+ipamorelin+sermorelin&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description: "Growth hormone secretagogue research: ipamorelin, CJC-1295, sermorelin, and related.",
+      rateLimitMs: 3000,
+    },
+
+    // ── U.S. Government / Regulatory ──────────────────────────────────────
+    {
       name: "FDA News Releases",
       slug: "fda-press-releases",
       feedUrl:
@@ -465,6 +623,17 @@ async function main() {
       siteUrl: "https://www.fda.gov",
       description:
         "Official U.S. FDA press releases covering drug approvals, safety updates, and regulatory news.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "FDA Drug Approvals",
+      slug: "fda-drug-approvals",
+      feedUrl:
+        "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/drug-approvals/rss.xml",
+      feedType: "rss",
+      siteUrl: "https://www.fda.gov",
+      description:
+        "FDA new drug approvals feed — surfaces approvals of peptide-based therapeutics.",
       rateLimitMs: 5000,
     },
     {
@@ -478,6 +647,18 @@ async function main() {
       rateLimitMs: 5000,
     },
     {
+      name: "NIH Research Matters",
+      slug: "nih-research-matters",
+      feedUrl: "https://www.nih.gov/news-events/nih-research-matters/feed",
+      feedType: "rss",
+      siteUrl: "https://www.nih.gov",
+      description:
+        "NIH Research Matters: summaries of NIH-funded research for general audiences.",
+      rateLimitMs: 5000,
+    },
+
+    // ── Science journalism ─────────────────────────────────────────────────
+    {
       name: "Science Daily — Health & Medicine",
       slug: "science-daily-health",
       feedUrl: "https://www.sciencedaily.com/rss/health_medicine.xml",
@@ -485,6 +666,26 @@ async function main() {
       siteUrl: "https://www.sciencedaily.com",
       description:
         "Health and medicine research summaries from universities and research institutions.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "Science Daily — Biochemistry",
+      slug: "science-daily-biochemistry",
+      feedUrl: "https://www.sciencedaily.com/rss/health_medicine/biochemistry.xml",
+      feedType: "rss",
+      siteUrl: "https://www.sciencedaily.com",
+      description:
+        "Biochemistry research news including peptide synthesis, protein interactions, and molecular biology.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "EurekAlert — Medicine & Health",
+      slug: "eurekalert-medicine",
+      feedUrl: "https://www.eurekalert.org/rss/medicine.xml",
+      feedType: "rss",
+      siteUrl: "https://www.eurekalert.org",
+      description:
+        "EurekAlert press releases from universities and institutions on medicine and health research.",
       rateLimitMs: 5000,
     },
   ];
