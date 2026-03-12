@@ -20,86 +20,108 @@ const LEGAL_LINKS = [
   { href: "/about#data-sources", label: "Data Sources" },
 ];
 
+const LINK_COLOR = "rgb(255 255 255 / 0.55)";
+const LINK_HOVER = "rgb(255 255 255 / 0.90)";
+
 export function Footer() {
   const year = new Date().getFullYear();
 
   return (
     <footer
-      className="mt-auto border-t border-[var(--border)]"
-      style={{ background: "var(--surface)" }}
+      className="mt-auto"
+      style={{ background: "var(--brand-navy)" }}
     >
-      {/* Disclaimer banner */}
-      <div
-        className="border-b border-[var(--border)] px-4 py-4"
-        style={{ background: "var(--info-bg)" }}
-      >
-        <div className="container-page">
-          <p
-            className="text-center text-xs leading-relaxed"
-            style={{ color: "var(--info)" }}
-          >
-            <strong>Medical Disclaimer:</strong> Peptide Daily provides price and
-            lab-testing data for informational purposes only. This is not medical
-            advice. Peptides are research chemicals; consult a qualified
-            healthcare professional before use. Finnrick ratings are
-            independent third-party data published at{" "}
-            <a
-              href="https://www.finnrick.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:opacity-80"
-            >
-              finnrick.com
-            </a>{" "}
-            and are not endorsed or modified by Peptide Daily.
-          </p>
-        </div>
-      </div>
-
       {/* Main footer grid */}
-      <div className="container-page py-10">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
-          <div className="lg:col-span-1">
+      <div className="container-page py-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr]">
+          {/* Brand column */}
+          <div>
             <Link
               href="/"
-              className="flex items-center gap-2 text-base font-bold"
+              className="flex items-center gap-2.5"
               aria-label="Peptide Daily home"
             >
               <span
-                className="flex h-7 w-7 items-center justify-center rounded-md text-white text-xs font-bold"
-                style={{ background: "var(--brand-navy)" }}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
+                style={{
+                  background: "rgb(255 255 255 / 0.10)",
+                  color: "rgb(255 255 255 / 0.9)",
+                  border: "1px solid rgb(255 255 255 / 0.15)",
+                }}
+                aria-hidden="true"
               >
-                PP
+                PD
               </span>
-              <span style={{ color: "var(--brand-navy)" }}>Peptide Daily</span>
+              <span
+                className="text-base leading-none text-white"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Peptide Daily
+              </span>
             </Link>
-            <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
+
+            <p
+              className="mt-4 text-sm leading-relaxed"
+              style={{ color: "rgb(255 255 255 / 0.55)" }}
+            >
               Lab-verified peptide quality data and price comparison for
               evidence-driven consumers.
             </p>
-            <p className="mt-3 text-xs" style={{ color: "var(--muted-light)" }}>
+
+            <p
+              className="mt-4 text-xs leading-relaxed"
+              style={{ color: "rgb(255 255 255 / 0.35)" }}
+            >
               Prices updated every 15 minutes.
               <br />
               Finnrick data refreshed weekly.
             </p>
+
+            {/* Disclaimer */}
+            <div
+              className="mt-5 rounded-lg p-3.5 text-xs leading-relaxed"
+              style={{
+                background: "rgb(255 255 255 / 0.05)",
+                border: "1px solid rgb(255 255 255 / 0.08)",
+                color: "rgb(255 255 255 / 0.45)",
+              }}
+            >
+              <strong style={{ color: "rgb(255 255 255 / 0.65)" }}>
+                Medical Disclaimer:
+              </strong>{" "}
+              Informational use only. Not medical advice. Peptides are research
+              chemicals — consult a healthcare professional before use.{" "}
+              <Link
+                href="/about#disclaimer"
+                className="underline transition-opacity hover:opacity-90"
+                style={{ color: "rgb(255 255 255 / 0.55)" }}
+              >
+                Learn more
+              </Link>
+            </div>
           </div>
 
           {/* Popular peptides */}
           <div>
             <h3
-              className="mb-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ color: "var(--muted)" }}
+              className="mb-4 text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--brand-gold)" }}
             >
               Popular Peptides
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {PEPTIDE_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors hover:text-[var(--accent)]"
-                    style={{ color: "var(--foreground-secondary)" }}
+                    className="text-sm transition-colors"
+                    style={{ color: LINK_COLOR }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_HOVER)
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_COLOR)
+                    }
                   >
                     {link.label}
                   </Link>
@@ -111,18 +133,24 @@ export function Footer() {
           {/* Resources */}
           <div>
             <h3
-              className="mb-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ color: "var(--muted)" }}
+              className="mb-4 text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--brand-gold)" }}
             >
               Resources
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {RESOURCE_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors hover:text-[var(--accent)]"
-                    style={{ color: "var(--foreground-secondary)" }}
+                    className="text-sm transition-colors"
+                    style={{ color: LINK_COLOR }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_HOVER)
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_COLOR)
+                    }
                   >
                     {link.label}
                   </Link>
@@ -134,18 +162,24 @@ export function Footer() {
           {/* Data & Legal */}
           <div>
             <h3
-              className="mb-3 text-xs font-semibold uppercase tracking-wider"
-              style={{ color: "var(--muted)" }}
+              className="mb-4 text-xs font-bold uppercase tracking-widest"
+              style={{ color: "var(--brand-gold)" }}
             >
               Data &amp; Legal
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm transition-colors hover:text-[var(--accent)]"
-                    style={{ color: "var(--foreground-secondary)" }}
+                    className="text-sm transition-colors"
+                    style={{ color: LINK_COLOR }}
+                    onMouseEnter={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_HOVER)
+                    }
+                    onMouseLeave={(e) =>
+                      ((e.currentTarget as HTMLElement).style.color = LINK_COLOR)
+                    }
                   >
                     {link.label}
                   </Link>
@@ -156,8 +190,14 @@ export function Footer() {
                   href="https://www.finnrick.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm transition-colors hover:text-[var(--accent)]"
-                  style={{ color: "var(--foreground-secondary)" }}
+                  className="text-sm transition-colors"
+                  style={{ color: LINK_COLOR }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = LINK_HOVER)
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = LINK_COLOR)
+                  }
                 >
                   Finnrick.com ↗
                 </a>
@@ -168,8 +208,11 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div
-          className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[var(--border)] pt-6 text-xs sm:flex-row"
-          style={{ color: "var(--muted-light)" }}
+          className="mt-10 flex flex-col items-center justify-between gap-3 border-t pt-6 text-xs sm:flex-row"
+          style={{
+            borderColor: "rgb(255 255 255 / 0.08)",
+            color: "rgb(255 255 255 / 0.3)",
+          }}
         >
           <p>© {year} Peptide Daily. All rights reserved.</p>
           <p>
@@ -178,7 +221,8 @@ export function Footer() {
               href="https://www.finnrick.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:opacity-80"
+              className="underline transition-opacity hover:opacity-80"
+              style={{ color: "rgb(255 255 255 / 0.45)" }}
             >
               Finnrick
             </a>

@@ -1,30 +1,36 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ── Design Tokens ──────────────────────────────────────────────────────── */
 
 :root {
   /* Brand */
-  --brand-navy: #0c4a6e;
-  --brand-navy-light: #0e5a85;
+  --brand-navy: #0f2744;           /* deep editorial navy */
+  --brand-navy-light: #183a56;
   --brand-sky: #0ea5e9;
   --brand-sky-light: #38bdf8;
   --brand-teal: #0d9488;
+  --brand-gold: #c8860a;           /* editorial gold — decorative accent */
+  --brand-gold-light: #fef3c7;
 
-  /* Neutrals — slate scale */
-  --background: #f8fafc;
+  /* Fonts */
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Neutrals — warm scale, print-inspired */
+  --background: #f7f6f2;
   --surface: #ffffff;
-  --surface-raised: #f1f5f9;
-  --foreground: #0f172a;
-  --foreground-secondary: #334155;
-  --muted: #64748b;
-  --muted-light: #94a3b8;
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --surface-raised: #eeebe6;
+  --foreground: #0f2744;
+  --foreground-secondary: #374151;
+  --muted: #6b7080;
+  --muted-light: #9ca3b0;
+  --border: #ddd8d0;
+  --border-strong: #c5bfb6;
 
   /* Semantic */
-  --accent: #0ea5e9;
-  --accent-hover: #0284c7;
+  --accent: #0570b0;               /* editorial deep blue (replaces SaaS sky) */
+  --accent-hover: #045090;
   --accent-fg: #ffffff;
   --success: #059669;
   --success-bg: #ecfdf5;
@@ -38,13 +44,14 @@
   --info: #0284c7;
   --info-bg: #f0f9ff;
   --info-border: #bae6fd;
+  --info-text: #0c4a6e;
 
   /* Card / surface */
   --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.07), 0 1px 2px -1px rgb(0 0 0 / 0.07);
-  --card-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
-  --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --card-border: #ddd8d0;
+  --card-shadow: 0 1px 3px 0 rgb(15 39 68 / 0.06), 0 1px 2px -1px rgb(15 39 68 / 0.05);
+  --card-shadow-md: 0 4px 12px -2px rgb(15 39 68 / 0.09), 0 2px 4px -2px rgb(15 39 68 / 0.05);
+  --card-shadow-hover: 0 12px 28px -4px rgb(15 39 68 / 0.12), 0 4px 8px -4px rgb(15 39 68 / 0.07);
 
   /* Grade colors */
   --grade-a-bg: #ecfdf5;
@@ -66,20 +73,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0f1e;
-    --surface: #111827;
-    --surface-raised: #1e2a3a;
+    --background: #08111e;
+    --surface: #0f1e2e;
+    --surface-raised: #162537;
     --foreground: #f1f5f9;
     --foreground-secondary: #cbd5e1;
     --muted: #94a3b8;
     --muted-light: #64748b;
-    --border: #1e293b;
-    --border-strong: #334155;
-    --card-bg: #111827;
-    --card-border: #1e293b;
+    --border: #1e2d3d;
+    --border-strong: #2a3d52;
+    --card-bg: #0f1e2e;
+    --card-border: #1e2d3d;
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
-    --card-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
-    --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+    --card-shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.3);
+    --card-shadow-hover: 0 12px 28px -4px rgb(0 0 0 / 0.35);
     --success-bg: #022c22;
     --success-border: #065f46;
     --warning-bg: #1c1400;
@@ -88,6 +95,8 @@
     --danger-border: #7f1d1d;
     --info-bg: #0a1929;
     --info-border: #075985;
+    --info-text: #bae6fd;
+    --brand-gold-light: #2d1f00;
     --grade-a-bg: #022c22;
     --grade-a-text: #6ee7b7;
     --grade-a-border: #065f46;
@@ -123,7 +132,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.6;
 }
@@ -197,7 +206,75 @@ h1, h2, h3, h4, h5, h6 {
   margin-block: 0;
 }
 
-/* Animate skeleton */
+/* ── Editorial display heading ─────────────────────────────────────────── */
+
+.display-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+/* ── Section label — editorial magazine style ──────────────────────────── */
+/* Usage: <div class="section-label">Top Stories</div>                      */
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand-gold);
+  white-space: nowrap;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  min-width: 1rem;
+}
+
+/* Section label in dark contexts */
+.section-label-light {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.5);
+  white-space: nowrap;
+}
+
+.section-label-light::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgb(255 255 255 / 0.15);
+  min-width: 1rem;
+}
+
+/* ── Tag pill ──────────────────────────────────────────────────────────── */
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: var(--surface-raised);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+/* ── Skeleton shimmer ──────────────────────────────────────────────────── */
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
