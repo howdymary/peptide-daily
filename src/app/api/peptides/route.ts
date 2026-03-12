@@ -4,12 +4,17 @@ import { cacheGet, cacheSet } from "@/lib/redis/client";
 import { peptideQuerySchema } from "@/lib/validation/schemas";
 import { errorResponse } from "@/lib/utils/api-response";
 import { withRateLimit } from "@/lib/security/rate-limit";
+import { computeTrustScore, GRADE_ORDER, bestFinnrickGrade } from "@/lib/finnrick/trust-score";
+import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
 import { Prisma } from "@prisma/client";
 
 /**
  * GET /api/peptides
  * List peptides with search, filters, sorting, and pagination.
  * Results are cached in Redis with a 5-minute TTL.
+ *
+ * Finnrick filters: finnrickGrade, minFinnrickScore
+ * Extended sorts: finnrick_rating, trust_score
  */
 export async function GET(req: NextRequest) {
   const rateLimited = await withRateLimit(req);
@@ -26,17 +31,25 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { search, vendor, minPrice, maxPrice, availability, sortBy, page, pageSize } =
-      parsed.data;
+    const {
+      search,
+      vendor,
+      minPrice,
+      maxPrice,
+      availability,
+      finnrickGrade,
+      minFinnrickScore,
+      sortBy,
+      page,
+      pageSize,
+    } = parsed.data;
 
-    // Build cache key from query params
     const cacheKey = `peptides:list:${JSON.stringify(parsed.data)}`;
     const cached = await cacheGet(cacheKey);
     if (cached) {
       return Response.json(cached);
     }
 
-    // Build where clause
     const where: Prisma.PeptideWhereInput = {};
 
     if (search) {
@@ -56,17 +69,20 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    // Count total for pagination
-    const totalCount = await prisma.peptide.count({ where });
-
-    // Determine ordering
-    let orderBy: Prisma.PeptideOrderByWithRelationInput = { name: "asc" };
-    if (sortBy === "rating") {
-      // Sort by rating requires a raw approach; default to name for now
-      orderBy = { name: "asc" };
+    if (finnrickGrade || minFinnrickScore !== undefined) {
+      where.finnrickRatings = {
+        some: {
+          ...(finnrickGrade ? { grade: finnrickGrade } : {}),
+          ...(minFinnrickScore !== undefined
+            ? { averageScore: { gte: minFinnrickScore } }
+            : {}),
+        },
+      };
     }
 
-    // Fetch peptides with aggregated data
+    const totalCount = await prisma.peptide.count({ where });
+    const orderBy: Prisma.PeptideOrderByWithRelationInput = { name: "asc" };
+
     const peptides = await prisma.peptide.findMany({
       where,
       skip: (page - 1) * pageSize,
@@ -74,16 +90,26 @@ export async function GET(req: NextRequest) {
       orderBy,
       include: {
         prices: {
-          include: { vendor: { select: { name: true } } },
+          include: { vendor: { select: { name: true, slug: true } } },
           orderBy: { price: "asc" },
         },
-        reviews: {
-          select: { rating: true },
+        reviews: { select: { rating: true } },
+        finnrickRatings: {
+          select: {
+            grade: true,
+            averageScore: true,
+            testCount: true,
+            minScore: true,
+            maxScore: true,
+            oldestTestDate: true,
+            newestTestDate: true,
+            finnrickUrl: true,
+            vendor: { select: { slug: true } },
+          },
         },
       },
     });
 
-    // Transform to API response shape
     const data = peptides.map((p) => {
       const ratings = p.reviews.map((r) => r.rating);
       const avgRating =
@@ -92,6 +118,38 @@ export async function GET(req: NextRequest) {
           : 0;
 
       const bestPrice = p.prices.length > 0 ? p.prices[0] : null;
+
+      const topFinnrickGrade = bestFinnrickGrade(p.finnrickRatings);
+
+      let trustScore = null;
+      if (bestPrice) {
+        const finnrickForBest = p.finnrickRatings.find(
+          (r) => r.vendor.slug === bestPrice.vendor.slug,
+        );
+        const finnrickItem: FinnrickRatingItem | null = finnrickForBest
+          ? {
+              grade: finnrickForBest.grade as FinnrickGrade,
+              averageScore: Number(finnrickForBest.averageScore),
+              testCount: finnrickForBest.testCount,
+              minScore: Number(finnrickForBest.minScore),
+              maxScore: Number(finnrickForBest.maxScore),
+              oldestTestDate: finnrickForBest.oldestTestDate.toISOString(),
+              newestTestDate: finnrickForBest.newestTestDate.toISOString(),
+              finnrickUrl: finnrickForBest.finnrickUrl,
+            }
+          : null;
+
+        const prices = p.prices.map((pr) => Number(pr.price)).sort((a, b) => a - b);
+        const median = prices.length > 0 ? prices[Math.floor(prices.length / 2)] : null;
+
+        trustScore = computeTrustScore({
+          finnrickRating: finnrickItem,
+          averageReviewRating: avgRating,
+          reviewCount: ratings.length,
+          priceRelativeToMedian:
+            median && median > 0 ? Number(bestPrice.price) / median : undefined,
+        });
+      }
 
       return {
         id: p.id,
@@ -104,33 +162,43 @@ export async function GET(req: NextRequest) {
         bestPrice: bestPrice ? Number(bestPrice.price) : null,
         bestPriceVendor: bestPrice ? bestPrice.vendor.name : null,
         priceCount: p.prices.length,
+        bestFinnrickGrade: topFinnrickGrade,
+        trustScore,
       };
     });
 
-    // Sort by price if requested (post-query since we need the computed bestPrice)
     if (sortBy === "price_asc") {
       data.sort((a, b) => (a.bestPrice ?? Infinity) - (b.bestPrice ?? Infinity));
     } else if (sortBy === "price_desc") {
       data.sort((a, b) => (b.bestPrice ?? 0) - (a.bestPrice ?? 0));
     } else if (sortBy === "rating") {
       data.sort((a, b) => b.averageRating - a.averageRating);
+    } else if (sortBy === "finnrick_rating") {
+      data.sort(
+        (a, b) =>
+          (GRADE_ORDER[b.bestFinnrickGrade ?? ""] ?? 0) -
+          (GRADE_ORDER[a.bestFinnrickGrade ?? ""] ?? 0),
+      );
+    } else if (sortBy === "trust_score") {
+      data.sort(
+        (a, b) => (b.trustScore?.overall ?? 0) - (a.trustScore?.overall ?? 0),
+      );
     }
 
+    const totalPages = Math.ceil(totalCount / pageSize);
     const response = {
       data,
       pagination: {
         page,
         pageSize,
         totalCount,
-        totalPages: Math.ceil(totalCount / pageSize),
-        hasNext: page < Math.ceil(totalCount / pageSize),
+        totalPages,
+        hasNext: page < totalPages,
         hasPrev: page > 1,
       },
     };
 
-    // Cache for 5 minutes
     await cacheSet(cacheKey, response, 300);
-
     return Response.json(response);
   } catch (err) {
     console.error("Error fetching peptides:", err);

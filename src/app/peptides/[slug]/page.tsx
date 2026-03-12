@@ -7,6 +7,12 @@ import { PriceTable } from "@/components/peptides/price-table";
 import { ReviewList } from "@/components/reviews/review-list";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { StarRating } from "@/components/ui/star-rating";
+import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
+import { TrustScoreBar } from "@/components/finnrick/trust-score-bar";
+import { Badge } from "@/components/ui/badge";
+import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
+import { GradeScaleTip, TrustScoreTip } from "@/components/ui/onboarding-tip";
+import { MedicalDisclaimer } from "@/components/ui/info-banner";
 import type { PeptideDetail, ReviewItem } from "@/types";
 
 export default function PeptideDetailPage() {
@@ -42,19 +48,15 @@ export default function PeptideDetailPage() {
     body: string;
   }) => {
     if (!peptide) return;
-
     const res = await fetch(`/api/peptides/${peptide.id}/reviews`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.message || "Failed to submit review");
     }
-
-    // Refresh peptide data to show new review
     await fetchPeptide();
   };
 
@@ -64,100 +66,233 @@ export default function PeptideDetailPage() {
     body: string;
   }) => {
     if (!editingReview) return;
-
     const res = await fetch(`/api/reviews/${editingReview.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
     if (!res.ok) {
       const err = await res.json();
       throw new Error(err.message || "Failed to update review");
     }
-
     setEditingReview(null);
     await fetchPeptide();
   };
 
   const handleReviewDelete = async (reviewId: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
-
-    const res = await fetch(`/api/reviews/${reviewId}`, {
-      method: "DELETE",
-    });
-
+    const res = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
     if (!res.ok) {
       const err = await res.json();
       alert(err.message || "Failed to delete review");
       return;
     }
-
     await fetchPeptide();
   };
 
+  // ── Loading skeleton ────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-48 animate-pulse rounded bg-[var(--card-bg)]" />
-        <div className="h-64 animate-pulse rounded-lg bg-[var(--card-bg)]" />
-        <div className="h-48 animate-pulse rounded-lg bg-[var(--card-bg)]" />
+      <div className="container-page py-8">
+        <div className="skeleton mb-2 h-4 w-32 rounded" />
+        <div className="skeleton mb-6 h-8 w-64 rounded" />
+        <div className="skeleton mb-8 h-24 w-full rounded-xl" />
+        <div className="skeleton h-64 w-full rounded-xl" />
       </div>
     );
   }
 
+  // ── Error state ─────────────────────────────────────────────────────────
   if (error || !peptide) {
     return (
-      <div className="rounded-lg border border-[var(--danger)] p-8 text-center">
-        <p className="text-[var(--danger)]">{error || "Peptide not found"}</p>
-        <Link href="/peptides" className="mt-4 inline-block text-[var(--accent)] hover:underline">
-          Back to catalog
-        </Link>
+      <div className="container-page py-12">
+        <div
+          className="rounded-xl p-8 text-center"
+          style={{ border: "1px solid var(--danger-border)", background: "var(--danger-bg)" }}
+        >
+          <p className="font-medium" style={{ color: "var(--danger)" }}>
+            {error || "Peptide not found"}
+          </p>
+          <Link
+            href="/peptides"
+            className="mt-4 inline-block text-sm font-medium hover:underline"
+            style={{ color: "var(--accent)" }}
+          >
+            ← Back to catalog
+          </Link>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-10">
-      {/* Header */}
-      <div>
-        <Link
-          href="/peptides"
-          className="mb-4 inline-block text-sm text-[var(--muted)] hover:text-[var(--foreground)]"
-        >
-          &larr; Back to catalog
-        </Link>
-        <h1 className="text-3xl font-bold">{peptide.name}</h1>
-        {peptide.description && (
-          <p className="mt-2 text-[var(--muted)]">{peptide.description}</p>
-        )}
+  // Build finnrick tests map keyed by vendor slug
+  const finnrickTests: Record<string, import("@/types").FinnrickTestItem[]> = {};
+  if (peptide.prices) {
+    for (const price of peptide.prices) {
+      // Tests are embedded in price items via the [id] API
+      const rat = (price as unknown as { finnrickTests?: import("@/types").FinnrickTestItem[] }).finnrickTests;
+      if (rat) finnrickTests[price.vendorSlug] = rat;
+    }
+  }
 
-        <div className="mt-4 flex items-center gap-4">
+  // Best Finnrick grade across all vendors
+  const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+  const allGrades = peptide.prices
+    .map((p) => p.finnrickRating?.grade)
+    .filter(Boolean) as string[];
+  const topGrade = allGrades.length > 0
+    ? allGrades.reduce((best, g) => (gradeOrder[g] ?? 0) > (gradeOrder[best] ?? 0) ? g : best)
+    : null;
+
+  return (
+    <div className="container-page py-8">
+      {/* Breadcrumb */}
+      <Link
+        href="/peptides"
+        className="mb-6 inline-flex items-center gap-1 text-sm transition-colors hover:text-[var(--accent)]"
+        style={{ color: "var(--muted)" }}
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Catalog
+      </Link>
+
+      {/* ── Hero section ──────────────────────────────────────────────── */}
+      <div
+        className="mb-6 rounded-2xl p-6 sm:p-8"
+        style={{
+          background: "linear-gradient(135deg, var(--brand-navy) 0%, #164e63 100%)",
+        }}
+      >
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            {/* Category pill */}
+            {peptide.category && (
+              <span
+                className="mb-2 inline-block rounded-full px-3 py-1 text-xs font-medium"
+                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
+              >
+                {peptide.category}
+              </span>
+            )}
+            <h1 className="text-3xl font-bold text-white sm:text-4xl">
+              {peptide.name}
+            </h1>
+            {peptide.description && (
+              <p
+                className="mt-2 max-w-xl text-sm leading-relaxed"
+                style={{ color: "rgba(255,255,255,0.75)" }}
+              >
+                {peptide.description}
+              </p>
+            )}
+          </div>
+
+          {/* Key metrics */}
+          <div className="flex shrink-0 flex-wrap gap-3 sm:flex-col sm:items-end">
+            {peptide.bestPrice !== null && (
+              <div className="text-right">
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  Best price
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  ${peptide.bestPrice.toFixed(2)}
+                </p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  {peptide.bestPriceVendor}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stats bar */}
+        <div
+          className="mt-6 flex flex-wrap gap-4 border-t pt-4"
+          style={{ borderColor: "rgba(255,255,255,0.15)" }}
+        >
+          {/* Rating */}
           <div className="flex items-center gap-2">
-            <StarRating rating={peptide.averageRating} />
-            <span className="text-sm text-[var(--muted)]">
-              {peptide.averageRating.toFixed(1)} ({peptide.reviewCount} review
-              {peptide.reviewCount !== 1 ? "s" : ""})
+            <StarRating rating={peptide.averageRating} size="sm" />
+            <span className="text-sm text-white/80">
+              {peptide.averageRating.toFixed(1)}
+              <span className="text-white/50"> ({peptide.reviewCount} reviews)</span>
             </span>
           </div>
 
-          {peptide.bestPrice !== null && (
-            <span className="text-lg font-bold text-[var(--success)]">
-              Best: ${peptide.bestPrice.toFixed(2)}
-            </span>
+          {/* Best lab grade */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/60">Best lab grade:</span>
+            {topGrade ? (
+              <GradeBadge grade={topGrade as import("@/types").FinnrickGrade} compact />
+            ) : (
+              <GradeBadgeEmpty />
+            )}
+          </div>
+
+          {/* Trust score */}
+          {peptide.trustScore && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-white/60">Trust:</span>
+              <TrustScoreBar trustScore={peptide.trustScore} size="md" />
+            </div>
           )}
+
+          {/* Vendor count */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/60">
+              {peptide.priceCount} vendor{peptide.priceCount !== 1 ? "s" : ""}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Price comparison table */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold">Vendor Prices</h2>
-        <PriceTable prices={peptide.prices} />
+      {/* ── Vendor comparison ─────────────────────────────────────────── */}
+      <section className="mb-8">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
+            Vendor Prices
+          </h2>
+          <div className="flex items-center gap-2">
+            {/* Trust badge for the peptide overall */}
+            <TrustBadge
+              type={deriveTrustBadge({
+                hasLabData: allGrades.length > 0,
+                grade: topGrade,
+                trustScore: peptide.trustScore?.overall,
+                testCount: peptide.prices.reduce(
+                  (sum, p) => sum + (p.finnrickRating?.testCount ?? 0),
+                  0,
+                ),
+              })}
+              grade={topGrade ?? undefined}
+            />
+            <Badge variant="info" size="sm">Updated every 15 min</Badge>
+          </div>
+        </div>
+
+        {/* Grade scale tip — shown once, then dismissed */}
+        <GradeScaleTip className="mb-4" />
+
+        <PriceTable
+          prices={peptide.prices}
+          peptideName={peptide.name}
+          finnrickTests={finnrickTests}
+        />
       </section>
 
-      {/* Reviews section */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold">Reviews</h2>
+      {/* ── Trust score explainer ────────────────────────────────────── */}
+      {peptide.trustScore && <TrustScoreTip className="mb-8" />}
+
+      {/* ── Data transparency note ──────────────────────────────────── */}
+      <MedicalDisclaimer className="mb-8" />
+
+      {/* ── Reviews ───────────────────────────────────────────────────── */}
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-bold" style={{ color: "var(--foreground)" }}>
+          Community Reviews
+        </h2>
         <ReviewList
           reviews={peptide.reviews}
           onEdit={setEditingReview}
@@ -165,9 +300,16 @@ export default function PeptideDetailPage() {
         />
       </section>
 
-      {/* Review form */}
-      <section>
-        <h2 className="mb-4 text-xl font-semibold">
+      {/* ── Review form ───────────────────────────────────────────────── */}
+      <section
+        className="rounded-xl p-6"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+          boxShadow: "var(--card-shadow)",
+        }}
+      >
+        <h2 className="mb-4 text-lg font-bold" style={{ color: "var(--foreground)" }}>
           {editingReview ? "Edit Your Review" : "Write a Review"}
         </h2>
         {editingReview ? (
@@ -184,7 +326,8 @@ export default function PeptideDetailPage() {
             />
             <button
               onClick={() => setEditingReview(null)}
-              className="mt-2 text-sm text-[var(--muted)] hover:underline"
+              className="mt-3 text-sm transition hover:opacity-70"
+              style={{ color: "var(--muted)" }}
             >
               Cancel editing
             </button>

@@ -2,7 +2,8 @@
  * Seed script for development.
  * Run: npx tsx prisma/seed.ts
  *
- * Creates sample vendors, peptides, and prices for local development.
+ * Creates sample vendors, peptides, prices, Finnrick ratings, and
+ * vendor mappings for local development.
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -19,7 +20,8 @@ function slugify(name: string): string {
 async function main() {
   console.log("Seeding database...");
 
-  // Create vendors
+  // ── Vendors ──────────────────────────────────────────────────────────────
+
   const vp = await prisma.vendor.upsert({
     where: { name: "Verified Peptides" },
     update: {},
@@ -40,7 +42,40 @@ async function main() {
     },
   });
 
-  // Create peptides
+  const paradigm = await prisma.vendor.upsert({
+    where: { name: "Paradigm Peptide" },
+    update: {},
+    create: {
+      name: "Paradigm Peptide",
+      slug: "paradigm-peptide",
+      website: "https://paradigmpeptide.com",
+    },
+  });
+
+  const polaris = await prisma.vendor.upsert({
+    where: { name: "Polaris Peptides" },
+    update: {},
+    create: {
+      name: "Polaris Peptides",
+      slug: "polaris-peptides",
+      website: "https://polarispeptides.com",
+    },
+  });
+
+  const skye = await prisma.vendor.upsert({
+    where: { name: "Skye Peptides" },
+    update: {},
+    create: {
+      name: "Skye Peptides",
+      slug: "skye-peptides",
+      website: "https://skyepeptides.com",
+    },
+  });
+
+  const vendors = [vp, pp, paradigm, polaris, skye];
+
+  // ── Peptides ──────────────────────────────────────────────────────────────
+
   const peptideData = [
     { name: "BPC-157", description: "Body Protection Compound-157, a pentadecapeptide derived from human gastric juice." },
     { name: "TB-500", description: "Thymosin Beta-4 fragment, involved in tissue repair and regeneration." },
@@ -66,9 +101,17 @@ async function main() {
     ),
   );
 
-  // Create prices for each peptide from both vendors
+  // Helper: find peptide by name
+  const getPeptide = (name: string) => {
+    const p = peptides.find((x) => x.name === name);
+    if (!p) throw new Error(`Peptide not found: ${name}`);
+    return p;
+  };
+
+  // ── Prices ────────────────────────────────────────────────────────────────
+
   const priceEntries = [
-    // Verified Peptides prices
+    // Verified Peptides
     { peptideIdx: 0, vendor: vp, price: 39.99, conc: "5mg", sku: "VP-BPC157-5", status: "in_stock" },
     { peptideIdx: 1, vendor: vp, price: 34.99, conc: "5mg", sku: "VP-TB500-5", status: "in_stock" },
     { peptideIdx: 2, vendor: vp, price: 42.99, conc: "50mg", sku: "VP-GHKCU-50", status: "in_stock" },
@@ -77,7 +120,7 @@ async function main() {
     { peptideIdx: 5, vendor: vp, price: 89.99, conc: "3mg", sku: "VP-SEMA-3", status: "in_stock" },
     { peptideIdx: 6, vendor: vp, price: 28.99, conc: "10mg", sku: "VP-PT141-10", status: "in_stock" },
     { peptideIdx: 7, vendor: vp, price: 24.99, conc: "10mg", sku: "VP-MT2-10", status: "in_stock" },
-    // Peptide Partners prices
+    // Peptide Partners
     { peptideIdx: 0, vendor: pp, price: 36.50, conc: "5mg", sku: "PP-BPC157-5", status: "in_stock" },
     { peptideIdx: 1, vendor: pp, price: 32.00, conc: "5mg", sku: "PP-TB500-5", status: "in_stock" },
     { peptideIdx: 2, vendor: pp, price: 45.00, conc: "50mg", sku: "PP-GHKCU-50", status: "in_stock" },
@@ -86,6 +129,24 @@ async function main() {
     { peptideIdx: 5, vendor: pp, price: 94.99, conc: "3mg", sku: "PP-SEMA-3", status: "pre_order" },
     { peptideIdx: 6, vendor: pp, price: 31.50, conc: "10mg", sku: "PP-PT141-10", status: "in_stock" },
     { peptideIdx: 7, vendor: pp, price: 22.99, conc: "10mg", sku: "PP-MT2-10", status: "in_stock" },
+    // Paradigm Peptide
+    { peptideIdx: 0, vendor: paradigm, price: 38.99, conc: "5mg", sku: "PAR-BPC157-5", status: "in_stock" },
+    { peptideIdx: 1, vendor: paradigm, price: 33.99, conc: "5mg", sku: "PAR-TB500-5", status: "in_stock" },
+    { peptideIdx: 3, vendor: paradigm, price: 30.99, conc: "5mg", sku: "PAR-IPA-5", status: "in_stock" },
+    { peptideIdx: 4, vendor: paradigm, price: 36.99, conc: "5mg", sku: "PAR-CJC1295-5", status: "in_stock" },
+    { peptideIdx: 5, vendor: paradigm, price: 87.99, conc: "3mg", sku: "PAR-SEMA-3", status: "in_stock" },
+    { peptideIdx: 6, vendor: paradigm, price: 27.99, conc: "10mg", sku: "PAR-PT141-10", status: "in_stock" },
+    // Polaris Peptides
+    { peptideIdx: 0, vendor: polaris, price: 37.50, conc: "5mg", sku: "POL-BPC157-5", status: "in_stock" },
+    { peptideIdx: 1, vendor: polaris, price: 33.50, conc: "5mg", sku: "POL-TB500-5", status: "in_stock" },
+    { peptideIdx: 2, vendor: polaris, price: 43.50, conc: "50mg", sku: "POL-GHKCU-50", status: "out_of_stock" },
+    { peptideIdx: 3, vendor: polaris, price: 28.50, conc: "5mg", sku: "POL-IPA-5", status: "in_stock" },
+    { peptideIdx: 4, vendor: polaris, price: 34.50, conc: "5mg", sku: "POL-CJC1295-5", status: "in_stock" },
+    { peptideIdx: 5, vendor: polaris, price: 88.50, conc: "3mg", sku: "POL-SEMA-3", status: "in_stock" },
+    // Skye Peptides
+    { peptideIdx: 0, vendor: skye, price: 40.00, conc: "5mg", sku: "SKYE-BPC157-5", status: "in_stock" },
+    { peptideIdx: 1, vendor: skye, price: 35.00, conc: "5mg", sku: "SKYE-TB500-5", status: "in_stock" },
+    { peptideIdx: 5, vendor: skye, price: 92.00, conc: "3mg", sku: "SKYE-SEMA-3", status: "in_stock" },
   ];
 
   for (const entry of priceEntries) {
@@ -112,7 +173,400 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${peptides.length} peptides with prices from 2 vendors.`);
+  // ── Vendor Mappings ───────────────────────────────────────────────────────
+
+  const mappings = [
+    {
+      vendor: vp,
+      finnrickSlug: "verified-peptides",
+      vendorDomain: "verifiedpeptides.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "VerifiedPeptidesFetcher",
+    },
+    {
+      vendor: pp,
+      finnrickSlug: "peptide-partners",
+      vendorDomain: "peptide.partners",
+      scrapingEnabled: false,
+      scrapingAdapter: "PeptidePartnersFetcher",
+      notes: "JS-rendered SPA — manual import only",
+    },
+    {
+      vendor: paradigm,
+      finnrickSlug: "paradigm-peptide",
+      vendorDomain: "paradigmpeptide.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "ParadigmPeptideFetcher",
+    },
+    {
+      vendor: polaris,
+      finnrickSlug: "polaris-peptides",
+      vendorDomain: "polarispeptides.com",
+      scrapingEnabled: true,
+      scrapingAdapter: "PolarisPeptidesFetcher",
+    },
+    {
+      vendor: skye,
+      finnrickSlug: "skye-peptides",
+      vendorDomain: "skyepeptides.com",
+      scrapingEnabled: false,
+      scrapingAdapter: "SkyePeptidesFetcher",
+      notes: "JS-rendered — manual import only",
+    },
+  ];
+
+  for (const m of mappings) {
+    await prisma.vendorMapping.upsert({
+      where: { vendorId: m.vendor.id },
+      update: {
+        finnrickSlug: m.finnrickSlug,
+        vendorDomain: m.vendorDomain,
+        scrapingEnabled: m.scrapingEnabled,
+        scrapingAdapter: m.scrapingAdapter ?? null,
+        notes: m.notes ?? null,
+      },
+      create: {
+        vendorId: m.vendor.id,
+        finnrickSlug: m.finnrickSlug,
+        vendorDomain: m.vendorDomain,
+        scrapingEnabled: m.scrapingEnabled,
+        scrapingAdapter: m.scrapingAdapter ?? null,
+        rateLimit: 6,
+        notes: m.notes ?? null,
+      },
+    });
+  }
+
+  // ── Finnrick Ratings ──────────────────────────────────────────────────────
+
+  const seedBatchId = "seed-batch-001";
+
+  // Create a FinnrickImport audit record for the seed data
+  await prisma.finnrickImport.upsert({
+    where: { id: seedBatchId },
+    update: {},
+    create: {
+      id: seedBatchId,
+      filename: "seed-data",
+      format: "json",
+      recordCount: 10,
+      errorCount: 0,
+      status: "completed",
+      completedAt: new Date(),
+      importedBy: "seed",
+    },
+  });
+
+  const finnrickRatings = [
+    // Peptide Partners — BPC-157: A
+    {
+      vendor: pp, peptideName: "BPC-157", grade: "A" as const,
+      averageScore: 8.1, testCount: 6, minScore: 6.9, maxScore: 10.0,
+      oldestTestDate: new Date("2025-10-23"), newestTestDate: new Date("2025-11-06"),
+      finnrickUrl: "https://www.finnrick.com/products/bpc-157/peptide-partners",
+    },
+    // Peptide Partners — Ipamorelin: A
+    {
+      vendor: pp, peptideName: "Ipamorelin", grade: "A" as const,
+      averageScore: 8.9, testCount: 7, minScore: 7.5, maxScore: 10.0,
+      oldestTestDate: new Date("2025-09-01"), newestTestDate: new Date("2025-11-10"),
+      finnrickUrl: "https://www.finnrick.com/products/ipamorelin/peptide-partners",
+    },
+    // Peptide Partners — TB-500: A
+    {
+      vendor: pp, peptideName: "TB-500", grade: "A" as const,
+      averageScore: 8.6, testCount: 6, minScore: 7.2, maxScore: 10.0,
+      oldestTestDate: new Date("2025-09-15"), newestTestDate: new Date("2025-11-05"),
+      finnrickUrl: null,
+    },
+    // Peptide Partners — CJC-1295: C
+    {
+      vendor: pp, peptideName: "CJC-1295", grade: "C" as const,
+      averageScore: 5.8, testCount: 9, minScore: 4.2, maxScore: 7.5,
+      oldestTestDate: new Date("2025-06-01"), newestTestDate: new Date("2025-10-20"),
+      finnrickUrl: "https://www.finnrick.com/products/cjc-1295/peptide-partners",
+    },
+    // Verified Peptides — BPC-157: B
+    {
+      vendor: vp, peptideName: "BPC-157", grade: "B" as const,
+      averageScore: 7.2, testCount: 4, minScore: 6.0, maxScore: 8.8,
+      oldestTestDate: new Date("2025-08-01"), newestTestDate: new Date("2025-10-15"),
+      finnrickUrl: null,
+    },
+    // Verified Peptides — TB-500: B
+    {
+      vendor: vp, peptideName: "TB-500", grade: "B" as const,
+      averageScore: 7.5, testCount: 3, minScore: 6.8, maxScore: 8.3,
+      oldestTestDate: new Date("2025-07-15"), newestTestDate: new Date("2025-10-01"),
+      finnrickUrl: null,
+    },
+    // Paradigm Peptide — BPC-157: A
+    {
+      vendor: paradigm, peptideName: "BPC-157", grade: "A" as const,
+      averageScore: 8.9, testCount: 5, minScore: 7.8, maxScore: 10.0,
+      oldestTestDate: new Date("2025-07-01"), newestTestDate: new Date("2025-11-01"),
+      finnrickUrl: "https://www.finnrick.com/products/bpc-157/paradigm-peptide",
+    },
+    // Paradigm Peptide — Ipamorelin: A
+    {
+      vendor: paradigm, peptideName: "Ipamorelin", grade: "A" as const,
+      averageScore: 9.1, testCount: 4, minScore: 8.2, maxScore: 10.0,
+      oldestTestDate: new Date("2025-08-01"), newestTestDate: new Date("2025-11-01"),
+      finnrickUrl: null,
+    },
+    // Polaris Peptides — BPC-157: B
+    {
+      vendor: polaris, peptideName: "BPC-157", grade: "B" as const,
+      averageScore: 7.0, testCount: 12, minScore: 3.9, maxScore: 9.8,
+      oldestTestDate: new Date("2024-06-01"), newestTestDate: new Date("2025-10-30"),
+      finnrickUrl: "https://www.finnrick.com/products/bpc-157/polaris-peptides",
+    },
+    // Polaris Peptides — Semaglutide: C (intentionally low)
+    {
+      vendor: polaris, peptideName: "Semaglutide", grade: "C" as const,
+      averageScore: 5.5, testCount: 8, minScore: 4.0, maxScore: 7.2,
+      oldestTestDate: new Date("2024-09-01"), newestTestDate: new Date("2025-09-15"),
+      finnrickUrl: null,
+    },
+    // Note: Skye Peptides, GHK-Cu, PT-141, Melanotan II intentionally have
+    // NO Finnrick data to exercise the graceful-degradation path in the UI.
+  ];
+
+  for (const r of finnrickRatings) {
+    const peptide = getPeptide(r.peptideName);
+    const existing = await prisma.finnrickVendorRating.findUnique({
+      where: { vendorId_peptideId: { vendorId: r.vendor.id, peptideId: peptide.id } },
+    });
+    if (!existing) {
+      await prisma.finnrickVendorRating.create({
+        data: {
+          vendorId: r.vendor.id,
+          peptideId: peptide.id,
+          grade: r.grade,
+          averageScore: r.averageScore,
+          testCount: r.testCount,
+          minScore: r.minScore,
+          maxScore: r.maxScore,
+          oldestTestDate: r.oldestTestDate,
+          newestTestDate: r.newestTestDate,
+          finnrickUrl: r.finnrickUrl,
+          importBatchId: seedBatchId,
+        },
+      });
+    }
+  }
+
+  // ── Sample test results for BPC-157 / Peptide Partners ───────────────────
+
+  const ppBpc157Rating = await prisma.finnrickVendorRating.findUnique({
+    where: { vendorId_peptideId: { vendorId: pp.id, peptideId: getPeptide("BPC-157").id } },
+  });
+
+  if (ppBpc157Rating) {
+    const testResults = [
+      {
+        testDate: new Date("2025-11-06"), testScore: 9.3,
+        advertisedQuantity: 10.0, actualQuantity: 10.7, quantityVariance: 7.0,
+        purity: 99.95, batchId: "BP20250808",
+        containerType: "White Label / Silver Crimp / Yellow Cap",
+        labId: "E", source: "Public",
+        endotoxinsStatus: "not detected",
+        certificateLink: "https://www.finnrick.com/testing-certificate/pp-bpc157-001",
+        identityResult: "Pass",
+      },
+      {
+        testDate: new Date("2025-10-23"), testScore: 6.9,
+        advertisedQuantity: 10.0, actualQuantity: 9.1, quantityVariance: -9.0,
+        purity: 97.20, batchId: "BP20250622",
+        containerType: "White Label / Silver Crimp / Yellow Cap",
+        labId: "E", source: "Public",
+        endotoxinsStatus: "not detected",
+        certificateLink: null,
+        identityResult: "Pass",
+      },
+    ];
+
+    for (const t of testResults) {
+      const exists = await prisma.finnrickTestResult.findFirst({
+        where: { ratingId: ppBpc157Rating.id, batchId: t.batchId },
+      });
+      if (!exists) {
+        await prisma.finnrickTestResult.create({
+          data: { ...t, ratingId: ppBpc157Rating.id, importBatchId: seedBatchId },
+        });
+      }
+    }
+  }
+
+  // Sample test result for Paradigm BPC-157
+  const parBpc157Rating = await prisma.finnrickVendorRating.findUnique({
+    where: { vendorId_peptideId: { vendorId: paradigm.id, peptideId: getPeptide("BPC-157").id } },
+  });
+
+  if (parBpc157Rating) {
+    const exists = await prisma.finnrickTestResult.findFirst({
+      where: { ratingId: parBpc157Rating.id, batchId: "PAR20251001" },
+    });
+    if (!exists) {
+      await prisma.finnrickTestResult.create({
+        data: {
+          ratingId: parBpc157Rating.id,
+          testDate: new Date("2025-11-01"), testScore: 10.0,
+          advertisedQuantity: 5.0, actualQuantity: 5.1, quantityVariance: 2.0,
+          purity: 99.98, batchId: "PAR20251001",
+          containerType: "Brown Glass / Gold Crimp",
+          labId: "A", source: "Public",
+          endotoxinsStatus: "not detected",
+          certificateLink: "https://www.finnrick.com/testing-certificate/par-bpc157-001",
+          identityResult: "Pass",
+          importBatchId: seedBatchId,
+        },
+      });
+    }
+  }
+
+  console.log(
+    `Seeded ${peptides.length} peptides, ${vendors.length} vendors, ` +
+      `${finnrickRatings.length} Finnrick ratings, ${mappings.length} vendor mappings.`,
+  );
+
+  // ── News Sources ─────────────────────────────────────────────────────────
+  // All sources use public RSS/Atom feeds.  We display attribution + links only
+  // and never republish full article text.  robots.txt is checked at runtime.
+
+  const newsSources = [
+    {
+      name: "PubMed — Peptide Research",
+      slug: "pubmed-peptides",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=peptide+therapy+clinical&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description:
+        "Peer-reviewed research on peptide therapy from the NIH/NLM PubMed database.",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "PubMed — GLP-1 Research",
+      slug: "pubmed-glp1",
+      feedUrl:
+        "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=GLP-1+semaglutide+tirzepatide&format=abstract&limit=20&sort=date",
+      feedType: "rss",
+      siteUrl: "https://pubmed.ncbi.nlm.nih.gov",
+      description: "Latest GLP-1 and weight-management peptide research from PubMed.",
+      rateLimitMs: 3000,
+    },
+    {
+      name: "FDA News Releases",
+      slug: "fda-press-releases",
+      feedUrl:
+        "https://www.fda.gov/about-fda/contact-fda/stay-informed/rss-feeds/press-releases/rss.xml",
+      feedType: "rss",
+      siteUrl: "https://www.fda.gov",
+      description:
+        "Official U.S. FDA press releases covering drug approvals, safety updates, and regulatory news.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "NIH News in Health",
+      slug: "nih-news",
+      feedUrl: "https://newsinhealth.nih.gov/sites/nihNIH/files/news_in_health.rss",
+      feedType: "rss",
+      siteUrl: "https://newsinhealth.nih.gov",
+      description:
+        "Plain-language health research news from the National Institutes of Health.",
+      rateLimitMs: 5000,
+    },
+    {
+      name: "Science Daily — Health & Medicine",
+      slug: "science-daily-health",
+      feedUrl: "https://www.sciencedaily.com/rss/health_medicine.xml",
+      feedType: "rss",
+      siteUrl: "https://www.sciencedaily.com",
+      description:
+        "Health and medicine research summaries from universities and research institutions.",
+      rateLimitMs: 5000,
+    },
+  ];
+
+  for (const source of newsSources) {
+    await prisma.newsSource.upsert({
+      where: { slug: source.slug },
+      update: { isActive: true },
+      create: { ...source, robotsTxtAllows: true },
+    });
+  }
+
+  console.log(`Seeded ${newsSources.length} news sources.`);
+
+  // ── Guides (authored evergreen content) ──────────────────────────────────
+
+  const guides = [
+    {
+      slug: "peptides-101",
+      title: "Peptides 101: What They Are and How They Work",
+      excerpt:
+        "A beginner-friendly introduction to peptides — what they are, how the body uses them, and why researchers study them. Covers the basics of amino acid chains, receptor binding, and common research applications.",
+      category: "basics",
+      readingTime: 7,
+      order: 1,
+    },
+    {
+      slug: "how-to-read-finnrick-ratings",
+      title: "How to Read Finnrick Lab Ratings",
+      excerpt:
+        "Finnrick publishes independent third-party lab testing results for peptide vendors. This guide explains the A–E grade scale, what purity and quantity variance mean, and how to use test data to evaluate vendors.",
+      category: "ratings",
+      readingTime: 5,
+      order: 1,
+    },
+    {
+      slug: "safety-and-regulatory-basics",
+      title: "Safety & Regulatory Basics for Peptide Research",
+      excerpt:
+        "An overview of the regulatory landscape for research peptides in the US and internationally. Covers FDA classification, compounding pharmacy rules, and what 'research use only' actually means.",
+      category: "safety",
+      readingTime: 8,
+      order: 1,
+    },
+    {
+      slug: "comparing-vendor-trust-scores",
+      title: "How Peptide Daily Trust Scores Are Calculated",
+      excerpt:
+        "The Trust Score (0–100) is our composite quality metric. This guide breaks down the three components — Finnrick lab data, community reviews, and pricing signals — and explains the weighting model.",
+      category: "ratings",
+      readingTime: 4,
+      order: 2,
+    },
+    {
+      slug: "glp1-peptides-overview",
+      title: "GLP-1 Peptides: Semaglutide, Tirzepatide, and Beyond",
+      excerpt:
+        "GLP-1 receptor agonists have transformed metabolic research. This guide covers the mechanism of action, key research peptides in this class, and what the clinical trial data currently shows.",
+      category: "research",
+      readingTime: 10,
+      order: 1,
+    },
+    {
+      slug: "how-to-choose-a-peptide-vendor",
+      title: "How to Choose a Peptide Vendor: A Practical Guide",
+      excerpt:
+        "Price isn't the only variable. This guide walks through the key criteria for evaluating a vendor: third-party lab testing, certificate of analysis availability, shipping practices, and customer support.",
+      category: "vendors",
+      readingTime: 6,
+      order: 1,
+    },
+  ];
+
+  for (const guide of guides) {
+    await prisma.guide.upsert({
+      where: { slug: guide.slug },
+      update: {},
+      create: { ...guide, isPublished: true },
+    });
+  }
+
+  console.log(`Seeded ${guides.length} guides.`);
 }
 
 main()

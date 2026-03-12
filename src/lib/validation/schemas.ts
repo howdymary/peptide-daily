@@ -1,5 +1,6 @@
 import { z } from "zod";
 import sanitizeHtml from "sanitize-html";
+import { finnrickGradeSchema } from "@/lib/finnrick/types";
 
 /**
  * Zod schemas for input validation.
@@ -48,9 +49,39 @@ export const peptideQuerySchema = z.object({
   minPrice: z.coerce.number().min(0).optional(),
   maxPrice: z.coerce.number().min(0).optional(),
   availability: z.enum(["in_stock", "out_of_stock", "pre_order"]).optional(),
-  sortBy: z.enum(["name", "price_asc", "price_desc", "rating"]).optional(),
+  finnrickGrade: finnrickGradeSchema.optional(),
+  minFinnrickScore: z.coerce.number().min(0).max(10).optional(),
+  sortBy: z
+    .enum(["name", "price_asc", "price_desc", "rating", "finnrick_rating", "trust_score"])
+    .optional(),
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  // Cap at 50 to avoid expensive full-table scans in a single request
+  pageSize: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+// ── Finnrick import schema ───────────────────────────────────────────────────
+
+// 5 MB max for import payloads — prevents memory exhaustion via huge uploads
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+
+export const finnrickImportSchema = z.object({
+  format: z.enum(["csv", "json"]),
+  content: z
+    .string()
+    .min(1, "File content is required")
+    .max(MAX_IMPORT_BYTES, "Import file must be smaller than 5 MB"),
+  filename: z.string().min(1).default("import"),
+});
+
+// ── Vendor mapping schema ────────────────────────────────────────────────────
+
+export const vendorMappingUpdateSchema = z.object({
+  finnrickSlug: z.string().min(1).max(100),
+  vendorDomain: z.string().max(255).nullable().optional(),
+  scrapingEnabled: z.boolean().optional(),
+  scrapingAdapter: z.string().max(100).nullable().optional(),
+  rateLimit: z.coerce.number().int().min(1).max(60).optional(),
+  notes: z.string().max(1000).nullable().optional(),
 });
 
 // ── Auth schemas ────────────────────────────────────────────────────────────
@@ -82,3 +113,5 @@ export type UpdateReviewInput = z.infer<typeof updateReviewSchema>;
 export type PeptideQueryInput = z.infer<typeof peptideQuerySchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
+export type FinnrickImportInput = z.infer<typeof finnrickImportSchema>;
+export type VendorMappingUpdateInput = z.infer<typeof vendorMappingUpdateSchema>;

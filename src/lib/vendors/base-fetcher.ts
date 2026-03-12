@@ -1,5 +1,6 @@
 import type { VendorFetcher, VendorPeptideData } from "@/types";
 import { logger } from "@/lib/utils/logger";
+import { env } from "@/config/env";
 
 /**
  * Abstract base for vendor-specific fetchers.
@@ -31,7 +32,7 @@ export abstract class BaseFetcher implements VendorFetcher {
       try {
         const response = await fetch(url, {
           headers: {
-            "User-Agent": "PeptidePal-Aggregator/1.0",
+            "User-Agent": env.SCRAPER_USER_AGENT,
             Accept: "text/html,application/json",
           },
           signal: AbortSignal.timeout(15000),

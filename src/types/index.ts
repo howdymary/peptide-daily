@@ -49,7 +49,15 @@ export interface PeptideFilters {
   minPrice?: number;
   maxPrice?: number;
   availability?: "in_stock" | "out_of_stock" | "pre_order";
-  sortBy?: "name" | "price_asc" | "price_desc" | "rating";
+  finnrickGrade?: FinnrickGrade;
+  minFinnrickScore?: number;
+  sortBy?:
+    | "name"
+    | "price_asc"
+    | "price_desc"
+    | "rating"
+    | "finnrick_rating"
+    | "trust_score";
   page?: number;
   pageSize?: number;
 }
@@ -67,6 +75,74 @@ export interface ReviewInput {
 
 export type UserRole = "USER" | "ADMIN";
 
+// ── Finnrick types ──────────────────────────────────────────────────────────
+
+/** Letter grade assigned by Finnrick per vendor+peptide pair. */
+export type FinnrickGrade = "A" | "B" | "C" | "D" | "E";
+
+/** Aggregate Finnrick rating for a vendor+peptide pair. Raw Finnrick values. */
+export interface FinnrickRatingItem {
+  grade: FinnrickGrade;
+  averageScore: number;
+  testCount: number;
+  minScore: number;
+  maxScore: number;
+  oldestTestDate: string;
+  newestTestDate: string;
+  finnrickUrl: string | null;
+}
+
+/** Individual Finnrick lab test result. */
+export interface FinnrickTestItem {
+  id: string;
+  testDate: string;
+  testScore: number;
+  advertisedQuantity: number;
+  actualQuantity: number;
+  quantityVariance: number;
+  purity: number;
+  batchId: string;
+  containerType: string;
+  labId: string;
+  source: string;
+  endotoxinsStatus: string | null;
+  certificateLink: string | null;
+  identityResult: string;
+}
+
+/**
+ * Combined trust score derived from Finnrick + reviews + pricing signals.
+ * This is OUR derived metric — never presented as Finnrick's own rating.
+ */
+export interface TrustScore {
+  /** 0–100 overall weighted score */
+  overall: number;
+  /** Finnrick-derived component (null when no Finnrick data) */
+  finnrickScore: number | null;
+  /** Review-derived component (null when no reviews) */
+  reviewScore: number | null;
+  /** Pricing signal component */
+  pricingScore: number | null;
+  breakdown: {
+    finnrickWeight: number;
+    reviewWeight: number;
+    pricingWeight: number;
+  };
+}
+
+/** Admin-facing vendor mapping configuration. */
+export interface VendorMappingConfig {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  finnrickSlug: string;
+  vendorDomain: string | null;
+  scrapingEnabled: boolean;
+  scrapingAdapter: string | null;
+  rateLimit: number;
+  notes: string | null;
+}
+
 // ── Peptide display types ───────────────────────────────────────────────────
 
 export interface PeptideListItem {
@@ -80,16 +156,24 @@ export interface PeptideListItem {
   bestPrice: number | null;
   bestPriceVendor: string | null;
   priceCount: number;
+  /** Best Finnrick grade across all vendors offering this peptide (null if none) */
+  bestFinnrickGrade: FinnrickGrade | null;
+  /** Trust score for the best-priced vendor (null if insufficient data) */
+  trustScore: TrustScore | null;
 }
 
 export interface PeptideDetail extends PeptideListItem {
   prices: PeptidePriceItem[];
   reviews: ReviewItem[];
+  /** Finnrick ratings keyed by vendor slug */
+  finnrickRatings: Record<string, FinnrickRatingItem>;
 }
 
 export interface PeptidePriceItem {
   id: string;
+  vendorId: string;
   vendorName: string;
+  vendorSlug: string;
   price: number;
   currency: string;
   concentration: string;
@@ -97,6 +181,10 @@ export interface PeptidePriceItem {
   productUrl: string;
   availabilityStatus: string;
   lastUpdated: Date;
+  /** Finnrick rating for this vendor+peptide (null if not available) */
+  finnrickRating: FinnrickRatingItem | null;
+  /** Peptide Daily-derived trust score (null if insufficient data) */
+  trustScore: TrustScore | null;
 }
 
 export interface ReviewItem {

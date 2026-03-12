@@ -21,6 +21,8 @@ function createRedisClient(): Redis {
     },
     enableReadyCheck: true,
     lazyConnect: true,
+    // Command timeout: abort if Redis doesn't respond within 5s
+    commandTimeout: 5000,
   });
 
   client.on("error", (err) => {
@@ -61,12 +63,30 @@ export async function cacheSet(
   }
 }
 
+/**
+ * Delete cache keys matching a glob pattern using SCAN.
+ *
+ * Uses SCAN (not KEYS) so the operation is non-blocking and safe for
+ * large production keyspaces.  SCAN iterates in batches of 100 and
+ * never blocks Redis for more than a few microseconds per call.
+ */
 export async function cacheDelete(pattern: string): Promise<void> {
   try {
-    const keys = await redis.keys(pattern);
-    if (keys.length > 0) {
-      await redis.del(...keys);
-    }
+    let cursor = "0";
+    const batchSize = 100;
+    do {
+      const [nextCursor, keys] = await redis.scan(
+        cursor,
+        "MATCH",
+        pattern,
+        "COUNT",
+        batchSize,
+      );
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await redis.del(...keys);
+      }
+    } while (cursor !== "0");
   } catch (err) {
     console.error("[Redis] Cache delete error:", err);
   }
