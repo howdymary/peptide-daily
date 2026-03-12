@@ -13,7 +13,7 @@
  */
 
 import { requireRole } from "@/lib/auth/helpers";
-import { getVendorHealthReport, detectDuplicateVendors } from "@/lib/vendors/aggregator";
+import { getVendorHealthReport, detectDuplicateVendors } from "@/lib/vendors/vendor-health";
 import { getSourceRegistrySummary } from "@/lib/vendors/scraper-config";
 import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
