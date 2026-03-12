@@ -303,3 +303,22 @@ h1, h2, h3, h4, h5, h6 {
 .trust-bar-fill {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* CSS-only card hover lift — for server-rendered cards that can't use JS handlers */
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* CSS-only see-also link hover */
+.see-also-link {
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.see-also-link:hover {
+  background: var(--surface-raised) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}

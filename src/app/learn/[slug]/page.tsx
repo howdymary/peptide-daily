@@ -327,27 +327,11 @@ export default async function PeptideDetailPage({
                   <Link
                     key={rel.slug}
                     href={`/learn/${rel.slug}`}
-                    className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+                    className="see-also-link rounded-lg border px-4 py-2 text-sm font-medium"
                     style={{
                       borderColor: "var(--border)",
                       background: "var(--surface)",
                       color: "var(--foreground-secondary)",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background =
-                        "var(--surface-raised)";
-                      (e.currentTarget as HTMLElement).style.borderColor =
-                        "var(--accent)";
-                      (e.currentTarget as HTMLElement).style.color =
-                        "var(--accent)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background =
-                        "var(--surface)";
-                      (e.currentTarget as HTMLElement).style.borderColor =
-                        "var(--border)";
-                      (e.currentTarget as HTMLElement).style.color =
-                        "var(--foreground-secondary)";
                     }}
                   >
                     {rel.label} →
@@ -355,7 +339,7 @@ export default async function PeptideDetailPage({
                 ))}
                 <Link
                   href="/learn"
-                  className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+                  className="see-also-link rounded-lg border px-4 py-2 text-sm font-medium"
                   style={{
                     borderColor: "var(--border)",
                     background: "var(--surface)",
