@@ -19,8 +19,8 @@ import { successResponse, errorResponse } from "@/lib/utils/api-response";
 import { logger } from "@/lib/utils/logger";
 
 export async function GET() {
-  const authError = await requireRole("ADMIN");
-  if (authError) return authError;
+  const { error } = await requireRole("ADMIN");
+  if (error) return error;
 
   try {
     const [healthReport, duplicates] = await Promise.all([
