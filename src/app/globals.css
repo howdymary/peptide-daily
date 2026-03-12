@@ -322,3 +322,19 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--accent) !important;
   color: var(--accent) !important;
 }
+
+/* CSS-only category nav button hover — for server-component sub-nav pills */
+.category-nav-btn {
+  transition: background 0.12s ease;
+}
+.category-nav-btn:hover {
+  background: var(--surface-raised) !important;
+}
+
+/* CSS-only ghost CTA button hover — for server-component CTA sections */
+.cta-ghost-btn {
+  transition: border-color 0.12s ease;
+}
+.cta-ghost-btn:hover {
+  border-color: rgb(255 255 255 / 0.45) !important;
+}
