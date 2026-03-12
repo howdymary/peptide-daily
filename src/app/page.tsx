@@ -15,7 +15,9 @@ import { NewsFeed } from "@/components/home/news-feed";
 import { ArticleCard } from "@/components/home/article-card";
 import { GuideCard } from "@/components/home/guide-card";
 import { PeptideSnapshotCard } from "@/components/home/peptide-snapshot-card";
+import { NewsTickerBanner } from "@/components/home/news-ticker";
 import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
+import type { TickerItem } from "@/components/home/news-ticker";
 
 export const metadata = {
   title: "Peptide Daily — Peptide Research Hub",
@@ -27,11 +29,11 @@ export const revalidate = 300;
 
 async function getHomepageData() {
   try {
-    const [featuredNews, editorsPicks, guides, peptides] = await Promise.all([
+    const [featuredNews, editorsPicks, guides, peptides, recentPrices] = await Promise.all([
       prisma.newsArticle.findMany({
         where: { isHidden: false },
         orderBy: { publishedAt: "desc" },
-        take: 8,
+        take: 12,
         include: { source: { select: { name: true, slug: true, siteUrl: true } } },
       }),
       prisma.newsArticle.findMany({
@@ -63,6 +65,16 @@ async function getHomepageData() {
           },
         },
       }),
+      // Fetch cheapest in-stock price per peptide for ticker price insights
+      prisma.peptidePrice.findMany({
+        where: { availabilityStatus: "in_stock" },
+        orderBy: { price: "asc" },
+        take: 50,
+        include: {
+          peptide: { select: { name: true, slug: true } },
+          vendor: { select: { name: true, slug: true } },
+        },
+      }),
     ]);
 
     const serializeArticle = (a: typeof featuredNews[0]) => ({
@@ -80,6 +92,36 @@ async function getHomepageData() {
     });
 
     const allTags = [...new Set(featuredNews.flatMap((a) => a.tags))].sort();
+
+    // ── Build ticker items ───────────────────────────────────────────────
+    // Mix latest news headlines with cheapest-price insights
+    const tickerNewsItems: TickerItem[] = featuredNews.slice(0, 8).map((a) => ({
+      text: a.title.length > 90 ? a.title.slice(0, 88) + "…" : a.title,
+      href: a.sourceUrl,
+      type: "news" as const,
+    }));
+
+    // Deduplicate prices by peptide name (keep only the cheapest per peptide)
+    const cheapestByPeptide = new Map<string, typeof recentPrices[0]>();
+    for (const p of recentPrices) {
+      const key = p.peptide.name;
+      if (!cheapestByPeptide.has(key)) cheapestByPeptide.set(key, p);
+    }
+    const priceInsights: TickerItem[] = [...cheapestByPeptide.values()]
+      .slice(0, 5)
+      .map((p) => ({
+        text: `${p.peptide.name} from $${Number(p.price).toFixed(2)} at ${p.vendor.name}`,
+        href: p.productUrl,
+        type: "price" as const,
+      }));
+
+    // Interleave: news, price, news, price, ...
+    const tickerItems: TickerItem[] = [];
+    const maxLen = Math.max(tickerNewsItems.length, priceInsights.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (tickerNewsItems[i]) tickerItems.push(tickerNewsItems[i]);
+      if (priceInsights[i]) tickerItems.push(priceInsights[i]);
+    }
 
     const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
     const trendingPeptides = peptides
@@ -162,6 +204,7 @@ async function getHomepageData() {
       })),
       trendingPeptides,
       allTags,
+      tickerItems,
     };
   } catch (err) {
     console.warn("[Homepage] DB unavailable, rendering empty shell:", (err as Error).message);
@@ -187,12 +230,13 @@ async function getHomepageData() {
         topVendors: { vendorName: string; vendorSlug: string; price: number; currency: string }[];
       }[],
       allTags: [] as string[],
+      tickerItems: [] as TickerItem[],
     };
   }
 }
 
 export default async function HomePage() {
-  const { featuredNews, editorsPicks, guides, trendingPeptides, allTags } =
+  const { featuredNews, editorsPicks, guides, trendingPeptides, allTags, tickerItems } =
     await getHomepageData();
 
   const editorIds = new Set(editorsPicks.map((a) => a.id));
@@ -200,6 +244,9 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* ── Moving headline ticker ────────────────────────────────────────── */}
+      <NewsTickerBanner items={tickerItems} />
+
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden py-20 sm:py-28"
