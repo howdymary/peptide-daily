@@ -14,6 +14,20 @@ export type RegulatoryStatus =
   | "compounded"
   | "approved-china";
 
+/**
+ * User intent / goal tags — used to filter peptides on the Learn hub and to
+ * power SEO landing pages (e.g. /learn/goals/weight-loss).
+ */
+export type GoalTag =
+  | "weight-loss"
+  | "muscle-growth"
+  | "workout-recovery"
+  | "skin"
+  | "longevity"
+  | "chronic-pain"
+  | "immune"
+  | "cognitive";
+
 export interface PeptideReference {
   number: number;
   title: string;
@@ -37,6 +51,13 @@ export interface PeptideContent {
   statusNote: string;
   seoTitle: string;
   metaDescription: string;
+  /**
+   * 1–2 sentence snippet used in inline "Learn" blocks on news, price, and
+   * vendor pages. Should be self-contained and jargon-free.
+   */
+  shortSummary: string;
+  /** User-intent tags that power goal-based filtering and SEO landing pages */
+  goalTags: GoalTag[];
   /** Array of paragraph strings */
   overview: string[];
   /** Array of paragraph strings */
@@ -79,6 +100,33 @@ export const REGULATORY_COLORS: Record<
   "approved-china":   { bg: "#f0fdfa", text: "#134e4a", border: "#99f6e4" },
 };
 
+export const GOAL_LABELS: Record<GoalTag, string> = {
+  "weight-loss":       "Weight Management",
+  "muscle-growth":     "Muscle Growth",
+  "workout-recovery":  "Workout Recovery",
+  "skin":              "Skin & Beauty",
+  "longevity":         "Longevity",
+  "chronic-pain":      "Chronic Pain",
+  "immune":            "Immune Support",
+  "cognitive":         "Cognitive & Sleep",
+};
+
+export const GOAL_DESCRIPTIONS: Record<GoalTag, string> = {
+  "weight-loss":      "Peptides studied in metabolic contexts — including FDA-approved GLP-1/GIP receptor agonists and investigational compounds involved in appetite regulation and fat metabolism.",
+  "muscle-growth":    "Growth hormone secretagogues and peptides studied in contexts of body composition, lean mass, and anabolic signaling. Most are investigational or compounded.",
+  "workout-recovery": "Peptides studied for potential roles in tissue repair, wound healing, and musculoskeletal recovery. Most evidence is preclinical.",
+  "skin":             "Peptides investigated for skin biology, collagen synthesis, and pigmentation — spanning commercial cosmetic ingredients and investigational compounds.",
+  "longevity":        "Peptides associated with cellular health, mitochondrial function, and age-related physiological pathways. Evidence ranges from early-stage to investigational.",
+  "chronic-pain":     "Peptides studied for anti-inflammatory and tissue-repair mechanisms relevant to chronic pain contexts. Human data is generally limited.",
+  "immune":           "Peptides that modulate immune function — from the relatively well-characterized thymosin class to early-stage antimicrobial peptides.",
+  "cognitive":        "Peptides studied for neuroprotective, anxiolytic, and cognitive effects. Most evidence comes from Russian clinical programs or early-phase research.",
+};
+
+export const GOAL_ORDER: GoalTag[] = [
+  "weight-loss", "muscle-growth", "workout-recovery", "skin",
+  "longevity", "chronic-pain", "immune", "cognitive",
+];
+
 // ─────────────────────────────────────────────────────────────────────────────
 // PEPTIDE DATA
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,6 +142,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Tirzepatide: Research Overview, Mechanism & Safety Context",
     metaDescription:
       "Learn what tirzepatide is, how it works as a dual GIP/GLP-1 receptor agonist, and what clinical research has shown. Educational overview only.",
+    shortSummary:
+      "Tirzepatide is an FDA-approved dual GIP/GLP-1 receptor agonist (Mounjaro, Zepbound) studied for type 2 diabetes and chronic weight management, with extensive Phase 3 trial data.",
+    goalTags: ["weight-loss"],
     overview: [
       "Tirzepatide is a synthetic peptide that activates two receptors involved in metabolic signaling: the glucose-dependent insulinotropic polypeptide (GIP) receptor and the glucagon-like peptide-1 (GLP-1) receptor. This dual-receptor mechanism distinguishes it from single-target GLP-1 receptor agonists. Tirzepatide is manufactured by Eli Lilly and is administered as a once-weekly subcutaneous injection.",
       "As a dual agonist, tirzepatide works by mimicking the activity of two naturally occurring incretin hormones that the body releases in response to food intake. These hormones help regulate blood sugar, slow gastric emptying, and influence appetite signaling in the brain. Tirzepatide has been one of the most widely studied peptides in metabolic research in recent years and has received multiple regulatory approvals in the United States.",
@@ -152,6 +203,9 @@ export const PEPTIDES: PeptideContent[] = [
   {
     slug: "semaglutide",
     name: "Semaglutide",
+    shortSummary:
+      "Semaglutide is an FDA-approved GLP-1 receptor agonist (Ozempic, Wegovy) with robust clinical evidence for type 2 diabetes management and chronic weight loss.",
+    goalTags: ["weight-loss"],
     category: "metabolic",
     regulatoryStatus: "fda-approved",
     statusNote: "FDA-approved as Ozempic (T2D), Wegovy (weight management), and Rybelsus (oral T2D)",
@@ -223,6 +277,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Retatrutide: Triple Agonist Research Overview & Clinical Trial Status",
     metaDescription:
       "What is retatrutide? Learn about this investigational triple GIP/GLP-1/glucagon receptor agonist and its Phase 3 TRIUMPH clinical trials.",
+    shortSummary:
+      "Retatrutide is an investigational triple GLP-1/GIP/glucagon receptor agonist in Phase 3 TRIUMPH trials, demonstrating significant weight reduction in Phase 2 research.",
+    goalTags: ["weight-loss"],
     overview: [
       "Retatrutide (LY3437943) is an investigational synthetic peptide developed by Eli Lilly. It is classified as a triple hormone receptor agonist, meaning it activates three receptors simultaneously: the glucose-dependent insulinotropic polypeptide (GIP) receptor, the glucagon-like peptide-1 (GLP-1) receptor, and the glucagon receptor. This triple-agonist mechanism is a first-in-class approach, adding glucagon receptor activation to the dual GIP/GLP-1 mechanism seen in tirzepatide.",
       "Retatrutide is designed to be administered as a once-weekly subcutaneous injection. The addition of the glucagon receptor target is hypothesized to contribute to additional energy expenditure and metabolic effects beyond what dual agonists achieve. As of early 2026, retatrutide remains an investigational compound and has not been approved for any indication by any regulatory authority.",
@@ -288,6 +345,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Mazdutide: Dual GLP-1/Glucagon Agonist Research & Clinical Trials",
     metaDescription:
       "What is mazdutide? Learn about this dual GLP-1/glucagon receptor agonist, its Phase 3 GLORY trials, and its regulatory status in China and the US.",
+    shortSummary:
+      "Mazdutide is a dual GLP-1/glucagon receptor agonist approved in China for weight management and T2D; currently in Phase 2 US trials. Not FDA-approved.",
+    goalTags: ["weight-loss"],
     overview: [
       "Mazdutide (IBI362) is a synthetic peptide developed by Innovent Biologics (under license from Eli Lilly) that acts as a dual agonist at both the glucagon-like peptide-1 (GLP-1) receptor and the glucagon receptor. This dual mechanism is designed to combine the appetite-suppressing and glucose-regulating effects of GLP-1 agonism with the energy expenditure and lipid metabolism effects associated with glucagon receptor activation.",
       "Mazdutide is administered as a once-weekly subcutaneous injection and has been studied primarily in Chinese populations through the GLORY clinical trial program. In June 2025, mazdutide received approval in China (as Xinermei) for chronic weight management in adults with overweight or obesity, followed by approval for type 2 diabetes in September 2025, making it the world's first approved dual GLP-1/glucagon receptor agonist. It is not FDA-approved in the United States.",
@@ -347,6 +407,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Survodutide: Dual GLP-1/Glucagon Agonist Research & Trial Status",
     metaDescription:
       "What is survodutide? Learn about this investigational dual GLP-1/glucagon agonist developed by Boehringer Ingelheim and its Phase 3 trials.",
+    shortSummary:
+      "Survodutide (BI 456906) is an investigational dual GLP-1/glucagon receptor agonist in Phase 3 trials for obesity and MASH; not yet approved by any regulatory authority.",
+    goalTags: ["weight-loss"],
     overview: [
       "Survodutide (BI 456906) is an investigational synthetic peptide developed by Boehringer Ingelheim that acts as a dual agonist at the glucagon-like peptide-1 (GLP-1) receptor and the glucagon receptor. Like mazdutide, survodutide is designed to combine incretin-mediated appetite suppression with glucagon-driven increases in energy expenditure and lipid metabolism.",
       "Survodutide is administered as a once-weekly subcutaneous injection. It is currently being evaluated in multiple Phase 3 clinical trial programs and has not been approved by any regulatory authority for any indication as of early 2026.",
@@ -406,6 +469,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Cagrilintide: Amylin Receptor Agonist Research & CagriSema Overview",
     metaDescription:
       "What is cagrilintide? Learn about this long-acting amylin analog, its role in CagriSema with semaglutide, and its Phase 3 REDEFINE trials.",
+    shortSummary:
+      "Cagrilintide is a long-acting amylin analog studied in combination with semaglutide (CagriSema) in Phase 3 REDEFINE trials. It is not yet approved by any regulatory authority.",
+    goalTags: ["weight-loss"],
     overview: [
       "Cagrilintide is a long-acting synthetic analog of amylin, a peptide hormone co-secreted with insulin from pancreatic beta cells. Amylin plays a role in slowing gastric emptying, promoting satiety, and suppressing glucagon secretion after meals. Cagrilintide is structurally modified to enhance its duration of action and is designed for once-weekly subcutaneous administration.",
       "Cagrilintide is developed by Novo Nordisk and is most prominently studied in combination with semaglutide as a fixed-dose combination known as CagriSema. This combination pairs amylin receptor agonism with GLP-1 receptor agonism, targeting two distinct satiety and metabolic pathways. CagriSema is currently in Phase 3 clinical trials and has not been approved by any regulatory authority.",
@@ -464,6 +530,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "BPC-157: Research Summary, Regulatory Status & Safety Information",
     metaDescription:
       "What is BPC-157? Learn about this gastric peptide, its preclinical research in tissue repair, and its current FDA and regulatory classification.",
+    shortSummary:
+      "BPC-157 is a synthetic gastric peptide extensively studied in animal models for tissue repair and gut healing. It has no completed human trials and is classified as an FDA Category 2 bulk drug substance.",
+    goalTags: ["workout-recovery", "chronic-pain"],
     overview: [
       "BPC-157 (Body Protection Compound-157) is a synthetic peptide consisting of 15 amino acids. It is derived from a sequence found in human gastric juice and is classified as a gastric pentadecapeptide. BPC-157 has been the subject of extensive preclinical research — predominantly in animal models — exploring its potential roles in tissue repair, mucosal protection, and various wound-healing processes.",
       "Despite growing interest from athletes, wellness communities, and some clinicians, BPC-157 has not been approved for human use by any regulatory authority. It has no completed randomized controlled trials in humans, and its safety profile in people remains largely unknown. The FDA has classified BPC-157 as a Category 2 bulk drug substance, restricting its use in pharmaceutical compounding.",
@@ -527,6 +596,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "TB-500 (Thymosin Beta-4 Fragment): Research Overview & Regulatory Status",
     metaDescription:
       "What is TB-500? Learn about this thymosin beta-4 fragment, its preclinical wound-healing research, and its FDA and regulatory classification.",
+    shortSummary:
+      "TB-500 is a synthetic fragment of thymosin beta-4, studied in preclinical and veterinary settings for tissue repair. It is not FDA-approved for human use and is WADA-prohibited.",
+    goalTags: ["workout-recovery", "muscle-growth"],
     overview: [
       "TB-500 is a synthetic peptide fragment derived from thymosin beta-4 (Tβ4), a naturally occurring 43-amino-acid protein found in virtually all human and animal cells. Thymosin beta-4 plays a central role in actin regulation, which is fundamental to cell migration, proliferation, and differentiation — processes critical to wound healing and tissue repair. TB-500 typically refers to a specific active fragment of the thymosin beta-4 sequence.",
       "TB-500 has been studied primarily in preclinical and veterinary settings, with particular interest in wound healing, tissue repair, and reduction of inflammation. It has not been approved by the FDA for any human use and is classified among the peptides with safety concerns for compounding purposes.",
@@ -584,6 +656,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "GHK-Cu: Copper Peptide Research, Skin Science & Regulatory Context",
     metaDescription:
       "What is GHK-Cu? Learn about this naturally occurring copper-binding peptide, its research in skin biology and wound healing, and its regulatory status.",
+    shortSummary:
+      "GHK-Cu is a naturally occurring copper-binding tripeptide researched for collagen synthesis and wound healing. Topical forms appear in many cosmetic products; injectable use is not FDA-approved.",
+    goalTags: ["skin", "workout-recovery", "longevity"],
     overview: [
       "GHK-Cu (glycyl-L-histidyl-L-lysine copper) is a naturally occurring copper-binding tripeptide first identified in human blood plasma. It consists of three amino acids (glycine, histidine, and lysine) complexed with a copper ion. GHK-Cu is present in human plasma, saliva, and urine, with plasma levels declining with age. It was first isolated and characterized in the 1970s by biochemist Loren Pickart.",
       "GHK-Cu has been studied primarily in the context of skin biology, wound healing, and cosmetic science. In preclinical research, it has been shown to participate in a range of biological processes, including stimulation of collagen synthesis, promotion of dermal remodeling and wound closure, antioxidant activity, and gene expression modulation related to tissue repair. GHK-Cu is used as an ingredient in some over-the-counter cosmetic and skincare products. It is not FDA-approved as a drug for any therapeutic indication.",
@@ -642,6 +717,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "CJC-1295: Growth Hormone Releasing Peptide Research & Regulatory Status",
     metaDescription:
       "What is CJC-1295? Learn about this GHRH analog, its clinical pharmacology research, and its current regulatory classification.",
+    shortSummary:
+      "CJC-1295 is a GHRH analog that stimulates pituitary GH release. Limited human clinical data exists; it is not FDA-approved and is classified as a compounding safety concern.",
+    goalTags: ["muscle-growth", "longevity"],
     overview: [
       "CJC-1295 is a synthetic peptide analog of growth hormone-releasing hormone (GHRH). It consists of the first 29 amino acids of GHRH with chemical modifications designed to extend its biological half-life. The most widely discussed form, CJC-1295 with DAC (Drug Affinity Complex), incorporates a maleimido group that enables binding to serum albumin, extending its effective half-life to approximately six to eight days. A shorter-acting variant (sometimes called Mod GRF 1-29 or CJC-1295 without DAC) also exists.",
       "CJC-1295 works by stimulating the pituitary gland to release growth hormone (GH), mimicking the natural signaling pathway used by the body's endogenous GHRH. It is not FDA-approved for any human indication and is classified by the FDA as a substance with safety concerns when used in compounding.",
@@ -700,6 +778,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Ipamorelin: Growth Hormone Secretagogue Research & Safety Overview",
     metaDescription:
       "What is ipamorelin? Learn about this selective ghrelin receptor agonist, its pharmacology research, and its current regulatory status.",
+    shortSummary:
+      "Ipamorelin is a selective growth hormone secretagogue that triggers pulsatile GH release without significant cortisol or prolactin elevation. Not FDA-approved; WADA-prohibited.",
+    goalTags: ["muscle-growth", "longevity"],
     overview: [
       "Ipamorelin is a synthetic pentapeptide that acts as a selective growth hormone secretagogue (GHS). It works by binding to the ghrelin receptor (also known as GHS-R1a) on pituitary cells, triggering a short, pulsatile release of growth hormone (GH). Ipamorelin is noted for its selectivity — unlike some other growth hormone releasing peptides, it does not significantly stimulate the release of cortisol, prolactin, or aldosterone, which are considered undesirable side effects in the context of GH modulation.",
       "Ipamorelin has been studied in early-phase clinical research and pharmacokinetic modeling, but it has not advanced through full clinical development and is not FDA-approved for any human use. It remains one of the most discussed research peptides in the growth hormone secretagogue category.",
@@ -758,6 +839,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Sermorelin: GHRH Analog Research, FDA History & Current Status",
     metaDescription:
       "What is sermorelin? Learn about this growth hormone-releasing hormone analog, its FDA history, and its current availability through compounding.",
+    shortSummary:
+      "Sermorelin (GHRH 1-29) was previously FDA-approved for pediatric GH deficiency and is now available through compounding. It stimulates pituitary GH release and has a longer clinical history than most research peptides.",
+    goalTags: ["muscle-growth", "longevity"],
     overview: [
       "Sermorelin (also known as GRF 1-29 or GHRH 1-29) is a synthetic peptide consisting of the first 29 amino acids of human growth hormone-releasing hormone (GHRH). It was one of the first GHRH analogs to be developed and clinically used, representing the shortest fragment of GHRH that retains full biological activity at the GHRH receptor.",
       "Sermorelin works by stimulating the pituitary gland to produce and release endogenous growth hormone (GH), rather than replacing GH directly. This mechanism preserves the body's natural pulsatile GH secretion pattern and feedback regulation. Sermorelin was previously FDA-approved (under the brand name Geref) for diagnosing and treating growth hormone deficiency in children but was discontinued from the commercial market in 2008 for business reasons, not safety concerns.",
@@ -816,6 +900,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Tesamorelin: FDA-Approved GHRH Analog for HIV Lipodystrophy",
     metaDescription:
       "What is tesamorelin? Learn about this FDA-approved GHRH analog, its clinical use in HIV-associated lipodystrophy, and its off-label research.",
+    shortSummary:
+      "Tesamorelin (Egrifta) is an FDA-approved GHRH analog indicated for HIV-associated lipodystrophy. It stimulates endogenous GH release and has Phase 3 trial data supporting its approved use.",
+    goalTags: ["weight-loss", "longevity"],
     overview: [
       "Tesamorelin is a synthetic 44-amino acid peptide analog of human growth hormone-releasing hormone (GHRH), developed by Theratechnologies. It preserves the full native GHRH sequence with an added N-terminal trans-3-hexenoic acid modification that improves stability against enzymatic degradation, extending its functional half-life compared to shorter analogs like sermorelin.",
       "Tesamorelin is the only GHRH analog currently carrying active FDA approval in the United States. It is approved under the brand name Egrifta (and the newer Egrifta WR formulation) for the reduction of excess abdominal fat in adults with HIV who have lipodystrophy — a condition characterized by abnormal fat distribution associated with antiretroviral therapy. An updated F8 formulation received FDA approval in early 2025, simplifying the dosing regimen.",
@@ -874,6 +961,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "Melanotan II: Melanocortin Peptide Research & Safety Information",
     metaDescription:
       "What is Melanotan II? Learn about this synthetic melanocortin peptide, its research history, and its regulatory and safety status.",
+    shortSummary:
+      "Melanotan II is a non-selective melanocortin receptor agonist studied for skin tanning and sexual function. It has never been approved by the FDA; multiple regulatory agencies have issued safety warnings.",
+    goalTags: ["skin"],
     overview: [
       "Melanotan II is a synthetic cyclic peptide analog of alpha-melanocyte-stimulating hormone (α-MSH), originally developed at the University of Arizona in the 1980s as a potential sunless tanning agent. It acts on melanocortin receptors (MC1R through MC5R) with relatively non-selective activity, meaning it triggers multiple physiological pathways beyond pigmentation — including appetite suppression and sexual arousal, the latter of which led to the development of the related compound bremelanotide (PT-141).",
       "Melanotan II has never been approved by the FDA or any other major regulatory authority for human use. Despite this, it has gained widespread use in unregulated markets, particularly in the tanning and bodybuilding communities. Multiple regulatory agencies globally have issued warnings about its use.",
@@ -931,6 +1021,9 @@ export const PEPTIDES: PeptideContent[] = [
     seoTitle: "PT-141 (Bremelanotide): FDA-Approved Melanocortin Agonist Overview",
     metaDescription:
       "What is PT-141? Learn about bremelanotide, its mechanism of action, FDA approval for HSDD, and its relationship to Melanotan II.",
+    shortSummary:
+      "PT-141 (bremelanotide / Vyleesi) is an FDA-approved melanocortin agonist for HSDD in premenopausal women. It targets CNS receptors influencing sexual desire rather than vascular pathways.",
+    goalTags: ["skin"],
     overview: [
       "PT-141, known by its generic name bremelanotide, is a synthetic cyclic heptapeptide derived from Melanotan II. It acts as an agonist at melanocortin receptors MC3R and MC4R in the central nervous system, distinguishing it from vascular-acting medications. Bremelanotide was developed by Palatin Technologies and refined from Melanotan II specifically to target sexual arousal pathways while minimizing broader melanocortin effects like skin pigmentation.",
       "In 2019, the FDA approved bremelanotide under the brand name Vyleesi for the treatment of acquired, generalized hypoactive sexual desire disorder (HSDD) in premenopausal women. This made it the first melanocortin receptor agonist approved for a sexual health indication and the first FDA-approved on-demand treatment specifically targeting sexual desire rather than vascular function.",
@@ -989,6 +1082,10 @@ export function getPeptidesByCategory(
   category: PeptideContent["category"],
 ): PeptideContent[] {
   return PEPTIDES.filter((p) => p.category === category);
+}
+
+export function getPeptidesByGoal(goal: GoalTag): PeptideContent[] {
+  return PEPTIDES.filter((p) => p.goalTags.includes(goal));
 }
 
 export const CATEGORY_ORDER: PeptideContent["category"][] = [

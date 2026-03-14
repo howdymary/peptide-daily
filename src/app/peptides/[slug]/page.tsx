@@ -13,7 +13,144 @@ import { Badge } from "@/components/ui/badge";
 import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
 import { GradeScaleTip, TrustScoreTip } from "@/components/ui/onboarding-tip";
 import { MedicalDisclaimer } from "@/components/ui/info-banner";
+import { getPeptideGuide, getCategoryRiskThemes } from "@/lib/learn/content-service";
+import { REGULATORY_LABELS, REGULATORY_COLORS } from "@/lib/learn/peptide-data";
 import type { PeptideDetail, ReviewItem } from "@/types";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATIONAL GUIDE PANEL — shown on each peptide price/review page
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PeptideGuidePanel({ slug }: { slug: string }) {
+  const guide = getPeptideGuide(slug);
+  if (!guide) return null;
+
+  const regColor = REGULATORY_COLORS[guide.regulatoryStatus];
+  const risks = getCategoryRiskThemes(guide.category);
+
+  return (
+    <section
+      className="mb-8 rounded-2xl border overflow-hidden"
+      style={{
+        borderColor: "var(--card-border)",
+        background: "var(--surface)",
+        boxShadow: "var(--card-shadow)",
+      }}
+    >
+      {/* Header */}
+      <div
+        className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4"
+        style={{ borderColor: "var(--border)", background: "var(--surface-raised)" }}
+      >
+        <div className="flex items-center gap-3">
+          <div>
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: "var(--brand-gold)" }}
+            >
+              What is this peptide?
+            </p>
+            <p className="text-base font-bold" style={{ color: "var(--foreground)" }}>
+              {guide.name}
+            </p>
+          </div>
+          <span
+            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+            style={{
+              background: regColor.bg,
+              color: regColor.text,
+              border: `1px solid ${regColor.border}`,
+            }}
+          >
+            {REGULATORY_LABELS[guide.regulatoryStatus]}
+          </span>
+        </div>
+        <Link
+          href={`/learn/${guide.slug}`}
+          className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[var(--surface-raised)]"
+          style={{
+            borderColor: "var(--border)",
+            color: "var(--accent)",
+          }}
+        >
+          Full research explainer →
+        </Link>
+      </div>
+
+      {/* Body */}
+      <div className="grid gap-0 sm:grid-cols-2">
+        {/* Overview */}
+        <div className="p-6 border-b sm:border-b-0 sm:border-r" style={{ borderColor: "var(--border)" }}>
+          <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+            Overview
+          </h3>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--foreground-secondary)" }}>
+            {guide.shortSummary}
+          </p>
+          <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--foreground-secondary)" }}>
+            {guide.overview[0]}
+          </p>
+          <div className="mt-4">
+            <p
+              className="mb-0.5 text-xs font-semibold uppercase tracking-wide"
+              style={{ color: "var(--muted)" }}
+            >
+              Regulatory note
+            </p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
+              {guide.statusNote}
+            </p>
+          </div>
+        </div>
+
+        {/* Safety overview */}
+        <div className="p-6">
+          <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+            Safety &amp; Research Context
+          </h3>
+          {guide.safetyNotes.slice(0, 2).map((note, i) => (
+            <p
+              key={i}
+              className="mb-2 text-sm leading-relaxed"
+              style={{ color: "var(--foreground-secondary)" }}
+            >
+              {note}
+            </p>
+          ))}
+          {risks.length > 0 && (
+            <div className="mt-4">
+              <p
+                className="mb-2 text-xs font-semibold uppercase tracking-wide"
+                style={{ color: "var(--muted)" }}
+              >
+                Common research-noted risk themes
+              </p>
+              <ul className="space-y-1">
+                {risks.slice(0, 3).map((risk, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-1.5 text-xs"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--warning)" }} aria-hidden="true" />
+                    {risk}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <Link
+            href={`/learn/${guide.slug}`}
+            className="mt-5 inline-block text-xs font-semibold underline underline-offset-2 transition-opacity hover:opacity-70"
+            style={{ color: "var(--accent)" }}
+          >
+            Read the full safety &amp; research overview →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function PeptideDetailPage() {
   const params = useParams();
@@ -281,6 +418,9 @@ export default function PeptideDetailPage() {
           finnrickTests={finnrickTests}
         />
       </section>
+
+      {/* ── Educational guide panel ───────────────────────────────────── */}
+      <PeptideGuidePanel slug={slug} />
 
       {/* ── Trust score explainer ────────────────────────────────────── */}
       {peptide.trustScore && <TrustScoreTip className="mb-8" />}
