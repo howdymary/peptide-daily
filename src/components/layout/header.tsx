@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_LINKS = [
-  { href: "/peptides", label: "Browse Peptides" },
+  { href: "/peptides", label: "Peptides" },
   { href: "/vendors", label: "Vendors" },
   { href: "/learn", label: "Learn" },
-  { href: "/about", label: "How It Works" },
+  { href: "/about", label: "Methodology" },
 ];
 
 export function Header() {
@@ -32,11 +32,11 @@ export function Header() {
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold transition-opacity hover:opacity-90"
-          style={{ color: "var(--brand-gold)" }}
+          style={{ color: "var(--brand-accent)" }}
         >
           Finnrick
         </a>
-        <span> · Prices updated every 15 min · For informational use only</span>
+        <span> · Prices updated every 15 min · For research use only</span>
       </div>
 
       {/* ── Main nav bar ───────────────────────────────────────────────── */}
@@ -112,7 +112,7 @@ export function Header() {
                   {active && (
                     <span
                       className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
-                      style={{ background: "var(--brand-gold)" }}
+                      style={{ background: "var(--brand-accent)" }}
                     />
                   )}
                 </Link>
