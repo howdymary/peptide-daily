@@ -9,6 +9,7 @@ import { TestResultsTable } from "@/components/finnrick/test-results-table";
 import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
 import { MedicalDisclaimer } from "@/components/ui/info-banner";
 import { DataFreshnessBar } from "@/components/ui/data-freshness";
+import { getPeptideGuide } from "@/lib/learn/content-service";
 import type { FinnrickGrade, FinnrickTestItem } from "@/types";
 
 interface FinnrickRatingSummary {
@@ -48,6 +49,80 @@ interface VendorDetail {
   finnrickRatingCount: number;
   finnrickRatings: FinnrickRatingSummary[];
   prices: VendorPriceSummary[];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATIONAL GUIDE REMINDER — shown at bottom of each vendor page
+// ─────────────────────────────────────────────────────────────────────────────
+
+function VendorGuideReminder({ peptideSlugs }: { peptideSlugs: string[] }) {
+  // Find guides that exist for any peptide this vendor carries
+  const guides = peptideSlugs
+    .slice(0, 6) // show up to 6 links
+    .map((slug) => getPeptideGuide(slug))
+    .filter(Boolean) as NonNullable<ReturnType<typeof getPeptideGuide>>[];
+
+  return (
+    <div
+      className="mt-6 rounded-xl border p-5"
+      style={{
+        background: "var(--surface-raised)",
+        borderColor: "var(--card-border)",
+      }}
+    >
+      <p
+        className="mb-1 text-xs font-bold uppercase tracking-wider"
+        style={{ color: "var(--brand-gold)" }}
+      >
+        Learn before you buy
+      </p>
+      <p className="mb-4 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+        Our educational guide covers every peptide this vendor carries — regulatory
+        status, research context, and safety considerations. We recommend reviewing
+        these before comparing prices.
+      </p>
+
+      {guides.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {guides.map((g) => (
+            <Link
+              key={g.slug}
+              href={`/learn/${g.slug}`}
+              className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--surface)]"
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--accent)",
+                background: "var(--card-bg)",
+              }}
+            >
+              {g.name} explainer →
+            </Link>
+          ))}
+          <Link
+            href="/learn"
+            className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-[var(--surface)]"
+            style={{
+              borderColor: "var(--border)",
+              color: "var(--muted)",
+              background: "var(--card-bg)",
+            }}
+          >
+            All peptide guides →
+          </Link>
+        </div>
+      )}
+
+      {guides.length === 0 && (
+        <Link
+          href="/learn"
+          className="text-xs font-semibold underline underline-offset-2 transition-opacity hover:opacity-70"
+          style={{ color: "var(--accent)" }}
+        >
+          Browse the peptide education hub →
+        </Link>
+      )}
+    </div>
+  );
 }
 
 export default function VendorDetailPage() {
@@ -382,6 +457,9 @@ export default function VendorDetailPage() {
           />
         )}
       </div>
+
+      {/* ── Educational guide reminder ────────────────────────────────── */}
+      <VendorGuideReminder peptideSlugs={vendor.prices.map((p) => p.peptideSlug)} />
 
       {/* Medical disclaimer */}
       <MedicalDisclaimer className="mt-6" />

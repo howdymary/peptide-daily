@@ -5,6 +5,9 @@ import {
   CATEGORY_ORDER,
   REGULATORY_LABELS,
   REGULATORY_COLORS,
+  GOAL_LABELS,
+  GOAL_DESCRIPTIONS,
+  GOAL_ORDER,
   getPeptidesByCategory,
 } from "@/lib/learn/peptide-data";
 import type { PeptideContent } from "@/lib/learn/peptide-data";
@@ -253,6 +256,52 @@ export default function LearnPage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Browse by goal ─────────────────────────────────────────────────── */}
+      <section className="py-10" style={{ background: "var(--surface)" }}>
+        <div className="container-page">
+          <p
+            className="mb-6 text-xs font-bold uppercase tracking-widest"
+            style={{ color: "var(--brand-gold)" }}
+          >
+            Browse by goal
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {GOAL_ORDER.map((goal) => (
+              <Link
+                key={goal}
+                href={`/learn/goals/${goal}`}
+                className="group rounded-xl border p-4 transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                style={{
+                  background: "var(--card-bg)",
+                  borderColor: "var(--card-border)",
+                  boxShadow: "var(--card-shadow)",
+                  textDecoration: "none",
+                }}
+              >
+                <p
+                  className="text-sm font-bold transition-colors group-hover:text-[var(--accent)]"
+                  style={{ color: "var(--foreground)" }}
+                >
+                  {GOAL_LABELS[goal]}
+                </p>
+                <p
+                  className="mt-1 text-xs leading-relaxed line-clamp-2"
+                  style={{ color: "var(--muted)" }}
+                >
+                  {GOAL_DESCRIPTIONS[goal]}
+                </p>
+                <p
+                  className="mt-3 text-xs font-semibold transition-opacity group-hover:opacity-70"
+                  style={{ color: "var(--accent)" }}
+                >
+                  Explore →
+                </p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
