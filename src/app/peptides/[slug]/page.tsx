@@ -160,9 +160,9 @@ export default function PeptideDetailPage() {
 
       {/* ── Hero section ──────────────────────────────────────────────── */}
       <div
-        className="mb-6 rounded-2xl p-6 sm:p-8"
+        className="mb-6 rounded-xl p-6 sm:p-8"
         style={{
-          background: "linear-gradient(135deg, var(--brand-navy) 0%, #164e63 100%)",
+          background: "var(--brand-navy)",
         }}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -268,7 +268,7 @@ export default function PeptideDetailPage() {
               })}
               grade={topGrade ?? undefined}
             />
-            <Badge variant="info" size="sm">Updated every 15 min</Badge>
+            <Badge variant="info" size="sm">Refreshed every 15 min</Badge>
           </div>
         </div>
 
@@ -310,7 +310,7 @@ export default function PeptideDetailPage() {
         }}
       >
         <h2 className="mb-4 text-lg font-bold" style={{ color: "var(--foreground)" }}>
-          {editingReview ? "Edit Your Review" : "Write a Review"}
+          {editingReview ? "Edit your review" : "Leave a review"}
         </h2>
         {editingReview ? (
           <div>
