@@ -309,7 +309,7 @@ export default async function HomePage() {
                                   {/* Section label */}
                                             <div className="section-label-light mb-5">
                                                           Independent Research Hub
-                                            </div>div>
+                                            </div>
                                 
                                   {/* Headline — DM Serif Display */}
                                             <h1
@@ -323,8 +323,8 @@ export default async function HomePage() {
                                                                             style={{ color: "var(--brand-accent)" }}
                                                                           >
                                                                           research hub.
-                                                          </em>em>
-                                            </h1>h1>
+                                                          </em>
+                                            </h1>
                                 
                                             <p
                                                             className="mt-5 text-base leading-relaxed sm:text-lg"
@@ -334,7 +334,7 @@ export default async function HomePage() {
                                                           and beauty, chronic pain, or muscle recovery — start with
                                                           verified lab data, real vendor prices, and honest community
                                                           reviews.
-                                            </p>p>
+                                            </p>
                                 
                                   {/* Search */}
                                             <form action="/peptides" method="get" className="mt-8">
@@ -347,7 +347,7 @@ export default async function HomePage() {
                                                                           >
                                                                           <label htmlFor="hero-search" className="sr-only">
                                                                                             Search peptides
-                                                                          </label>label>
+                                                                          </label>
                                                                           <input
                                                                                               id="hero-search"
                                                                                               name="search"
@@ -362,9 +362,9 @@ export default async function HomePage() {
                                                                                               style={{ background: "var(--brand-accent)", color: "#fff" }}
                                                                                             >
                                                                                             Search
-                                                                          </button>button>
-                                                          </div>div>
-                                            </form>form>
+                                                                          </button>
+                                                          </div>
+                                            </form>
                                 
                                   {/* Quick links — more action-oriented */}
                                             <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -380,12 +380,12 @@ export default async function HomePage() {
                                                                             style={{ color: "rgb(255 255 255 / 0.55)" }}
                                                                           >
                                                           {l.label} →
-                                                        </Link>Link>
+                                                        </Link>
                                                       ))}
-                                            </div>div>
-                                </div>div>
-                      </div>div>
-              </section>section>
+                                            </div>
+                                </div>
+                      </div>
+              </section>
         
           {/* ── Top Stories — asymmetric editorial grid ───────────────────────── */}
           {editorsPicks.length > 0 && (
@@ -394,7 +394,7 @@ export default async function HomePage() {
                               {/* Section label */}
                                         <div className="section-label mb-7">
                                                       Top Stories
-                                        </div>div>
+                                        </div>
                             
                               {/* Editorial grid: 1 large + 2 stacked */}
                               {editorsPicks.length === 1 ? (
@@ -412,8 +412,8 @@ export default async function HomePage() {
                                                                                 variant="featured"
                                                                               />
                                                       ))}
-                                                  </div>div>
-                                  </div>div>
+                                                  </div>
+                                  </div>
                                         )}
                             
                                         <div className="mt-6 flex justify-end">
@@ -423,10 +423,10 @@ export default async function HomePage() {
                                                                         style={{ color: "var(--accent)" }}
                                                                       >
                                                                       All news →
-                                                      </Link>Link>
-                                        </div>div>
+                                                      </Link>
+                                        </div>
                             </div>
-                  </section>section>
+                  </section>
               )}
         
           {/* ── Peptide Finder strip ──────────────────────────────────────────── */}
@@ -438,14 +438,14 @@ export default async function HomePage() {
                                                       <div>
                                                                       <div className="section-label-light mb-2">
                                                                                         Peptide Finder
-                                                                      </div>div>
+                                                                      </div>
                                                                       <h2
                                                                                           className="display-heading text-2xl sm:text-3xl"
                                                                                           style={{ color: "#ffffff" }}
                                                                                         >
                                                                                         Top-rated peptides by lab data and community trust
-                                                                      </h2>h2>
-                                                      </div>div>
+                                                                      </h2>
+                                                      </div>
                                                       <Link
                                                                         href="/peptides"
                                                                         className="shrink-0 rounded-lg border px-4 py-2 text-sm font-medium text-white transition-colors hover:border-white/40"
@@ -455,17 +455,17 @@ export default async function HomePage() {
                                                                         }}
                                                                       >
                                                                       Full catalog →
-                                                      </Link>Link>
-                                        </div>div>
+                                                      </Link>
+                                        </div>
                             
                               {/* Horizontal scrollable peptide cards */}
                                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                           {trendingPeptides.map((p) => (
                                     <PeptideSnapshotCard key={p.id} peptide={p} dark />
                                   ))}
-                                        </div>div>
-                            </div>div>
-                  </section>section>
+                                        </div>
+                            </div>
+                  </section>
               )}
         
           {/* ── Latest News + Sidebar ─────────────────────────────────────────── */}
@@ -476,9 +476,9 @@ export default async function HomePage() {
                                             <div>
                                                           <div className="section-label mb-6">
                                                                           Latest Research News
-                                                          </div>div>
+                                                          </div>
                                                           <NewsFeed articles={feedArticles} allTags={allTags} />
-                                            </div>div>
+                                            </div>
                                 
                                   {/* Right: sidebar */}
                                             <aside className="space-y-10">
@@ -487,27 +487,27 @@ export default async function HomePage() {
                           <div>
                                             <div className="section-label mb-5">
                                                                 Learn
-                                            </div>div>
+                                            </div>
                                             <div className="space-y-3">
                                               {guides.slice(0, 4).map((guide) => (
                                                   <GuideCard key={guide.id} guide={guide} compact />
                                                 ))}
-                                            </div>div>
+                                            </div>
                                             <Link
                                                                   href="/guides"
                                                                   className="mt-4 block text-sm font-medium transition-opacity hover:opacity-80"
                                                                   style={{ color: "var(--accent)" }}
                                                                 >
                                                                 All guides →
-                                            </Link>Link>
-                          </div>div>
+                                            </Link>
+                          </div>
                                                           )}
                                             
                                               {/* Browse by category */}
                                                           <div>
                                                                           <div className="section-label mb-5">
                                                                                             Browse by Category
-                                                                          </div>div>
+                                                                          </div>
                                                                           <div className="grid grid-cols-2 gap-2">
                                                                             {[
           { label: "GLP-1 Agonists", href: "/peptides?search=semaglutide" },
@@ -526,14 +526,14 @@ export default async function HomePage() {
                                                                           }}
                                                                         >
                                                     {cat.label}
-                                                  </Link>Link>
+                                                  </Link>
                                                 ))}
-                                                                          </div>div>
-                                                          </div>div>
-                                            </aside>aside>
-                                </div>div>
-                      </div>div>
-              </section>section>
+                                                                          </div>
+                                                          </div>
+                                            </aside>
+                                </div>
+                      </div>
+              </section>
         
           {/* ── Learn — guides grid ───────────────────────────────────────────── */}
           {guides.length > 0 && (
@@ -543,30 +543,30 @@ export default async function HomePage() {
                                                       <div>
                                                                       <div className="section-label mb-2">
                                                                                         Guides &amp; Education
-                                                                      </div>div>
+                                                                      </div>
                                                                       <h2
                                                                                           className="display-heading text-2xl"
                                                                                           style={{ color: "var(--foreground)" }}
                                                                                         >
                                                                                         Research guides and reference
-                                                                      </h2>h2>
-                                                      </div>div>
+                                                                      </h2>
+                                                      </div>
                                                       <Link
                                                                         href="/guides"
                                                                         className="shrink-0 text-sm font-medium transition-opacity hover:opacity-80"
                                                                         style={{ color: "var(--accent)" }}
                                                                       >
                                                                       All guides →
-                                                      </Link>Link>
-                                        </div>div>
+                                                      </Link>
+                                        </div>
                             
                                         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                                           {guides.slice(0, 6).map((guide) => (
                                     <GuideCard key={guide.id} guide={guide} />
                                   ))}
-                                        </div>div>
-                            </div>div>
-                  </section>section>
+                                        </div>
+                            </div>
+                  </section>
               )}
         
           {/* ── Where the data comes from ─────────────────────────────────────── */}
@@ -575,13 +575,13 @@ export default async function HomePage() {
                                 <div className="mb-8">
                                             <div className="section-label mb-2">
                                                           Our Methodology
-                                            </div>div>
+                                            </div>
                                             <h2
                                                             className="display-heading text-2xl"
                                                             style={{ color: "var(--foreground)" }}
                                                           >
                                                           Where the data comes from
-                                            </h2>h2>
+                                            </h2>
                                             <p className="mt-2 text-sm" style={{ color: "var(--muted)" }}>
                                                           Transparent methodology — you should always know where numbers come from.{" "}
                                                           <Link
@@ -590,9 +590,9 @@ export default async function HomePage() {
                                                                             style={{ color: "var(--muted)" }}
                                                                           >
                                                                           Full methodology →
-                                                          </Link>Link>
-                                            </p>p>
-                                </div>div>
+                                                          </Link>
+                                            </p>
+                                </div>
                       
                                 <div className="grid gap-6 sm:grid-cols-3">
                                   {[
@@ -631,24 +631,24 @@ export default async function HomePage() {
                                                                           style={{ color: item.accent }}
                                                                         >
                                                                         Step {item.number}
-                                                      </span>span>
+                                                      </span>
                                                       <h3
                                                                           className="mt-2 text-sm font-semibold"
                                                                           style={{ color: "var(--foreground)" }}
                                                                         >
                                                         {item.title}
-                                                      </h3>h3>
+                                                      </h3>
                                                       <p
                                                                           className="mt-2 text-sm leading-relaxed"
                                                                           style={{ color: "var(--muted)" }}
                                                                         >
                                                         {item.body}
-                                                      </p>p>
-                                      </div>div>
+                                                      </p>
+                                      </div>
                                     ))}
-                                </div>div>
-                      </div>div>
-              </section>section>
+                                </div>
+                      </div>
+              </section>
         
           {/* ── Medical disclaimer ───────────────────────────────────────────── */}
               <section
@@ -660,7 +660,7 @@ export default async function HomePage() {
                       >
                       <div className="container-page">
                                 <p className="text-xs leading-relaxed" style={{ color: "var(--info-text)" }}>
-                                            <strong>Medical disclaimer:</strong>strong> Peptide Daily is an informational
+                                            <strong>Medical disclaimer:</strong> Peptide Daily is an informational
                                             resource only. Peptide research chemicals are not approved for human use
                                             by the FDA unless otherwise noted. Nothing on this site constitutes
                                             medical advice. Consult a qualified healthcare provider before using any
@@ -671,10 +671,10 @@ export default async function HomePage() {
                                                             className="underline"
                                                           >
                                                           Learn more →
-                                            </Link>Link>
-                                </p>p>
-                      </div>div>
-              </section>section>
+                                            </Link>
+                                </p>
+                      </div>
+              </section>
         
           {/* ── Bottom CTA ───────────────────────────────────────────────────── */}
               <section
@@ -695,20 +695,20 @@ export default async function HomePage() {
                                 <div className="mx-auto max-w-xl text-center">
                                             <div className="section-label-light mb-5 justify-center">
                                                           Start comparing
-                                            </div>div>
+                                            </div>
                                             <h2
                                                             className="display-heading text-3xl sm:text-4xl"
                                                             style={{ color: "#ffffff" }}
                                                           >
                                                           Your peptide research starts here
-                                            </h2>h2>
+                                            </h2>
                                             <p
                                                             className="mt-4 text-sm leading-relaxed"
                                                             style={{ color: "rgb(255 255 255 / 0.6)" }}
                                                           >
                                                           Browse all peptides, filter by Finnrick lab grade, and find the
                                                           best price-to-quality ratio — across every tracked vendor.
-                                            </p>p>
+                                            </p>
                                             <div className="mt-8 flex flex-wrap justify-center gap-3">
                                                           <Link
                                                                             href="/peptides"
@@ -716,7 +716,7 @@ export default async function HomePage() {
                                                                             style={{ background: "var(--brand-accent)", color: "#fff" }}
                                                                           >
                                                                           Compare Prices
-                                                          </Link>Link>
+                                                          </Link>
                                                           <Link
                                                                             href="/vendors"
                                                                             className="cta-ghost-btn rounded-lg border px-6 py-3 text-sm font-medium text-white transition-colors"
@@ -726,11 +726,11 @@ export default async function HomePage() {
                                                                             }}
                                                                           >
                                                                           View Vendors
-                                                          </Link>Link>
-                                            </div>div>
-                                </div>div>
-                      </div>div>
-              </section>section>
-        </div>div>
+                                                          </Link>
+                                            </div>
+                                </div>
+                      </div>
+              </section>
+        </div>
       );
-}</div>
+}
