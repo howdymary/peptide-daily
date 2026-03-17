@@ -29,8 +29,8 @@ const CATEGORY_ACCENT: Record<string, string> = {
 };
 
 function categoryAccent(cat: string | null): string {
-  if (!cat) return "var(--brand-gold)";
-  return CATEGORY_ACCENT[cat] ?? "var(--brand-gold)";
+  if (!cat) return "var(--brand-accent)";
+  return CATEGORY_ACCENT[cat] ?? "var(--brand-accent)";
 }
 
 interface Props {
@@ -53,7 +53,7 @@ export function PeptideSnapshotCard({ peptide, dark = false }: Props) {
   return (
     <Link
       href={`/peptides/${peptide.slug}`}
-      className="group flex flex-col rounded-xl overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+      className="group flex flex-col rounded-lg overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
       style={{
         background: cardBg,
         border: `1px solid ${cardBorder}`,
@@ -109,7 +109,7 @@ export function PeptideSnapshotCard({ peptide, dark = false }: Props) {
               <>
                 <p
                   className="text-2xl font-bold tabular-nums leading-none"
-                  style={{ color: dark ? "#4ade80" : "var(--success)" }}
+                  style={{ color: dark ? "#6ee7b7" : "var(--success)" }}
                 >
                   ${peptide.bestPrice.toFixed(2)}
                 </p>
@@ -156,7 +156,7 @@ export function PeptideSnapshotCard({ peptide, dark = false }: Props) {
                   className="shrink-0 text-xs font-semibold tabular-nums"
                   style={{
                     color: i === 0
-                      ? (dark ? "#4ade80" : "var(--success)")
+                      ? (dark ? "#6ee7b7" : "var(--success)")
                       : mutedColor,
                   }}
                 >
