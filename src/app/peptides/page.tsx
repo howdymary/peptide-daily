@@ -4,9 +4,9 @@ import { PeptideList } from "@/components/peptides/peptide-list";
 import { CatalogGuideTip } from "@/components/ui/onboarding-tip";
 
 export const metadata = {
-  title: "Peptide Catalog",
+  title: "Peptide Catalog — Compare Prices, Lab Grades, and Reviews",
   description:
-    "Browse and compare peptides by price, Finnrick lab rating, and community reviews. Find the best vendors for BPC-157, semaglutide, TB-500, and more.",
+    "Browse 50+ peptides with live vendor pricing, Finnrick lab grades, and community reviews. Filter by category, price, and lab quality.",
 };
 
 export default function PeptidesPage() {
@@ -14,11 +14,16 @@ export default function PeptidesPage() {
     <div className="container-page py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
-          Peptide Catalog
+        <h1
+          className="text-2xl font-bold"
+          style={{ color: "var(--foreground)" }}
+        >
+          Compare Peptide Prices and Lab Grades
         </h1>
         <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-          Vendor prices compared alongside third-party Finnrick lab data. Prices refresh automatically.
+          Live vendor pricing updated every 15 minutes, alongside independent
+          Finnrick lab grades and community reviews. Filter by category, price
+          range, or lab quality.
         </p>
       </div>
 
