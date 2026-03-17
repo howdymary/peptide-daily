@@ -277,7 +277,7 @@ export default async function HomePage() {
               <br />
               <em
                 className="not-italic"
-                style={{ color: "var(--brand-gold)" }}
+                style={{ color: "var(--brand-accent)" }}
               >
                 starts here.
               </em>
@@ -309,7 +309,7 @@ export default async function HomePage() {
                 <button
                   type="submit"
                   className="shrink-0 rounded-lg px-5 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
-                  style={{ background: "var(--brand-gold)", color: "#fff" }}
+                  style={{ background: "var(--brand-accent)", color: "#fff" }}
                 >
                   Search
                 </button>
@@ -389,7 +389,7 @@ export default async function HomePage() {
                 <h2
                   className="display-heading text-2xl text-white sm:text-3xl"
                 >
-                  Top-rated peptides this week
+                  Highest-rated by lab grade and Trust Score
                 </h2>
               </div>
               <Link
@@ -453,10 +453,10 @@ export default async function HomePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: "GLP-1", href: "/peptides?search=semaglutide", icon: "⚡" },
-                    { label: "Recovery", href: "/peptides?search=bpc-157", icon: "🔧" },
-                    { label: "Growth", href: "/peptides?search=ipamorelin", icon: "📈" },
-                    { label: "Cosmetic", href: "/peptides?search=ghk-cu", icon: "✦" },
+                    { label: "GLP-1 Agonists", href: "/peptides?search=semaglutide" },
+                    { label: "Recovery", href: "/peptides?search=bpc-157" },
+                    { label: "Growth Hormone", href: "/peptides?search=ipamorelin" },
+                    { label: "Cosmetic", href: "/peptides?search=ghk-cu" },
                   ].map((cat) => (
                     <Link
                       key={cat.label}
@@ -492,7 +492,7 @@ export default async function HomePage() {
                   className="display-heading text-2xl"
                   style={{ color: "var(--foreground)" }}
                 >
-                  Everything you need to know
+                  Research guides and reference
                 </h2>
               </div>
               <Link
@@ -552,7 +552,7 @@ export default async function HomePage() {
                 number: "03",
                 title: "Trust Score",
                 body: "Our Trust Score (0–100) combines Finnrick lab quality (50%), community reviews (30%), and pricing signals (20%) into a single number.",
-                accent: "var(--brand-gold)",
+                accent: "var(--brand-accent)",
               },
             ].map((item) => (
               <div
@@ -626,12 +626,12 @@ export default async function HomePage() {
         <div className="container-page relative">
           <div className="mx-auto max-w-xl text-center">
             <div className="section-label-light mb-5 justify-center">
-              Ready to compare?
+              Start comparing
             </div>
             <h2
               className="display-heading text-3xl text-white sm:text-4xl"
             >
-              Find the best peptide vendors with confidence
+              Compare vendors across lab data, price, and reviews
             </h2>
             <p className="mt-4 text-sm leading-relaxed" style={{ color: "rgb(255 255 255 / 0.6)" }}>
               Browse all peptides, filter by Finnrick lab grade, and find the
@@ -641,7 +641,7 @@ export default async function HomePage() {
               <Link
                 href="/peptides"
                 className="rounded-lg px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
-                style={{ background: "var(--brand-gold)", color: "#fff" }}
+                style={{ background: "var(--brand-accent)", color: "#fff" }}
               >
                 Browse Catalog
               </Link>
