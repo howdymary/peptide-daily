@@ -273,14 +273,11 @@ export default async function HomePage() {
             <h1
               className="display-heading text-4xl text-white sm:text-5xl lg:text-6xl"
             >
-              Your peptide research
-              <br />
-              <em
-                className="not-italic"
-                style={{ color: "var(--brand-accent)" }}
-              >
-                starts here.
-              </em>
+              Independent peptide data,<br />
+                <em className="not-italic" style={{ color: "var(--brand-accent)" }}
+                >
+                  verified and compared.
+                </em>
             </h1>
 
             <p className="mt-5 text-base leading-relaxed sm:text-lg" style={{ color: "rgb(255 255 255 / 0.65)" }}>
