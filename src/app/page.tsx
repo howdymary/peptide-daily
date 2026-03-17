@@ -468,7 +468,6 @@ export default async function HomePage() {
                         color: "var(--foreground-secondary)",
                       }}
                     >
-                      <span className="text-base" aria-hidden="true">{cat.icon}</span>
                       {cat.label}
                     </Link>
                   ))}
