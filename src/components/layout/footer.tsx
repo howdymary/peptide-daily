@@ -11,7 +11,7 @@ const PEPTIDE_LINKS = [
 ];
 
 const RESOURCE_LINKS = [
-  { href: "/about", label: "How It Works" },
+  { href: "/about", label: "Methodology" },
   { href: "/about#finnrick", label: "About Finnrick Ratings" },
   { href: "/about#trust-score", label: "Trust Score Explained" },
   { href: "/vendors", label: "All Vendors" },
@@ -107,7 +107,7 @@ export function Footer() {
           <div>
             <h3
               className="mb-4 text-xs font-bold uppercase tracking-widest"
-              style={{ color: "var(--brand-gold)" }}
+              style={{ color: "var(--brand-accent)" }}
             >
               Popular Peptides
             </h3>
@@ -136,7 +136,7 @@ export function Footer() {
           <div>
             <h3
               className="mb-4 text-xs font-bold uppercase tracking-widest"
-              style={{ color: "var(--brand-gold)" }}
+              style={{ color: "var(--brand-accent)" }}
             >
               Resources
             </h3>
@@ -165,7 +165,7 @@ export function Footer() {
           <div>
             <h3
               className="mb-4 text-xs font-bold uppercase tracking-widest"
-              style={{ color: "var(--brand-gold)" }}
+              style={{ color: "var(--brand-accent)" }}
             >
               Data &amp; Legal
             </h3>
