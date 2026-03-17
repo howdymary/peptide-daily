@@ -18,8 +18,7 @@ export default function PeptidesPage() {
           Peptide Catalog
         </h1>
         <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
-          Compare vendor prices alongside third-party Finnrick lab data. Prices
-          refresh every 15 minutes.
+          Vendor prices compared alongside third-party Finnrick lab data. Prices refresh automatically.
         </p>
       </div>
 
