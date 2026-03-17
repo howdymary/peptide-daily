@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const NAV_LINKS = [
-  { href: "/peptides", label: "Peptides" },
-  { href: "/vendors", label: "Vendors" },
+  { href: "/peptides", label: "Compare Prices" },
   { href: "/learn", label: "Learn" },
-  { href: "/about", label: "Methodology" },
+  { href: "/vendors", label: "Vendor Ratings" },
+  { href: "/about", label: "How We Source Data" },
 ];
 
 export function Header() {
@@ -26,7 +26,7 @@ export function Header() {
           color: "rgb(255 255 255 / 0.65)",
         }}
       >
-        <span>Lab data from </span>
+        <span>Lab data sourced from </span>
         <a
           href="https://www.finnrick.com"
           target="_blank"
@@ -36,7 +36,7 @@ export function Header() {
         >
           Finnrick
         </a>
-        <span> · Prices updated every 15 min · For research use only</span>
+        <span> · Prices refresh every 15 min · For research purposes only</span>
       </div>
 
       {/* ── Main nav bar ───────────────────────────────────────────────── */}
@@ -56,7 +56,6 @@ export function Header() {
             className="flex shrink-0 items-center gap-2.5"
             aria-label="Peptide Daily home"
           >
-            {/* Brand mark */}
             <span
               className="flex h-8 w-8 items-center justify-center rounded-lg text-white text-xs font-bold tracking-tight shrink-0"
               style={{ background: "var(--brand-navy)" }}
@@ -64,7 +63,6 @@ export function Header() {
             >
               PD
             </span>
-            {/* Wordmark — DM Serif Display */}
             <span
               className="text-lg leading-none"
               style={{
@@ -92,9 +90,7 @@ export function Header() {
                   href={link.href}
                   className="relative rounded-md px-3.5 py-2 text-sm font-medium transition-colors"
                   style={{
-                    color: active
-                      ? "var(--brand-navy)"
-                      : "var(--muted)",
+                    color: active ? "var(--brand-navy)" : "var(--muted)",
                   }}
                   onMouseEnter={(e) => {
                     if (!active)
@@ -108,7 +104,6 @@ export function Header() {
                   }}
                 >
                   {link.label}
-                  {/* Active underline */}
                   {active && (
                     <span
                       className="absolute bottom-0 left-3.5 right-3.5 h-0.5 rounded-full"
@@ -131,7 +126,8 @@ export function Header() {
                   "var(--foreground)")
               }
               onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.color = "var(--muted)")
+                ((e.currentTarget as HTMLElement).style.color =
+                  "var(--muted)")
               }
             >
               Sign In
@@ -141,7 +137,7 @@ export function Header() {
               className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: "var(--brand-navy)" }}
             >
-              Get Started
+              Create Free Account
             </Link>
           </div>
 
@@ -196,7 +192,10 @@ export function Header() {
               borderColor: "var(--border)",
             }}
           >
-            <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
+            <nav
+              className="flex flex-col gap-0.5"
+              aria-label="Mobile navigation"
+            >
               {NAV_LINKS.map((link) => {
                 const active = pathname === link.href;
                 return (
@@ -234,7 +233,7 @@ export function Header() {
                 style={{ background: "var(--brand-navy)" }}
                 onClick={() => setMobileOpen(false)}
               >
-                Get Started
+                Create Free Account
               </Link>
             </nav>
           </div>
