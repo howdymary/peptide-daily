@@ -60,23 +60,30 @@
   /* Cards */
   --card-bg: #ffffff;
   --card-border: #e2ddd6;
-  --card-shadow: 0 1px 2px 0 rgb(26 35 50 / 0.04), 0 1px 3px -1px rgb(26 35 50 / 0.03);
-  --card-shadow-md: 0 4px 12px -2px rgb(26 35 50 / 0.07), 0 2px 4px -2px rgb(26 35 50 / 0.04);
-  --card-shadow-hover: 0 8px 24px -4px rgb(26 35 50 / 0.10), 0 4px 8px -4px rgb(26 35 50 / 0.05);
+  --card-shadow: 0 1px 2px 0 rgb(26 35 50 / 0.04),
+    0 1px 3px -1px rgb(26 35 50 / 0.03);
+  --card-shadow-md: 0 4px 12px -2px rgb(26 35 50 / 0.07),
+    0 2px 4px -2px rgb(26 35 50 / 0.04);
+  --card-shadow-hover: 0 8px 24px -4px rgb(26 35 50 / 0.10),
+    0 4px 8px -4px rgb(26 35 50 / 0.05);
 
   /* Finnrick grade colors */
   --grade-a-bg: #eef9f4;
   --grade-a-text: #065f46;
   --grade-a-border: #6ee7b7;
+
   --grade-b-bg: #f0fdfa;
   --grade-b-text: #134e4a;
   --grade-b-border: #99f6e4;
+
   --grade-c-bg: #fef8ee;
   --grade-c-text: #92400e;
   --grade-c-border: #f5d99a;
+
   --grade-d-bg: #fff7ed;
   --grade-d-text: #7c2d12;
   --grade-d-border: #fed7aa;
+
   --grade-e-bg: #fdf2f2;
   --grade-e-text: #7f1d1d;
   --grade-e-border: #f5c6c6;
@@ -99,11 +106,13 @@
     --muted-light: #5e6f82;
     --border: #1e2d3d;
     --border-strong: #2a3f54;
+
     --card-bg: #101e2e;
     --card-border: #1e2d3d;
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
     --card-shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.3);
     --card-shadow-hover: 0 12px 28px -4px rgb(0 0 0 / 0.35);
+
     --success-bg: #022c22;
     --success-border: #065f46;
     --warning-bg: #1c1400;
@@ -113,19 +122,25 @@
     --info-bg: #0a1929;
     --info-border: #075985;
     --info-text: #bae6fd;
+
     --brand-accent-light: #2d1f00;
+
     --grade-a-bg: #022c22;
     --grade-a-text: #6ee7b7;
     --grade-a-border: #065f46;
+
     --grade-b-bg: #022019;
     --grade-b-text: #99f6e4;
     --grade-b-border: #134e4a;
+
     --grade-c-bg: #1c1400;
     --grade-c-text: #fde68a;
     --grade-c-border: #92400e;
+
     --grade-d-bg: #1c0f00;
     --grade-d-text: #fed7aa;
     --grade-d-border: #7c2d12;
+
     --grade-e-bg: #1c0a0a;
     --grade-e-text: #fecaca;
     --grade-e-border: #7f1d1d;
@@ -134,7 +149,11 @@
 
 /* ── Base ──────────────────────────────────────────────────────────────── */
 
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 html {
   -webkit-font-smoothing: antialiased;
@@ -157,14 +176,29 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--foreground);
 }
 
-p { max-width: 68ch; }
+p {
+  max-width: 68ch;
+}
 
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-light); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-light);
+}
 
 .container-page {
   width: 100%;
@@ -172,8 +206,16 @@ p { max-width: 68ch; }
   margin-inline: auto;
   padding-inline: 1rem;
 }
-@media (min-width: 640px) { .container-page { padding-inline: 1.5rem; } }
-@media (min-width: 1024px) { .container-page { padding-inline: 2rem; } }
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
 
 .card {
   background: var(--card-bg);
@@ -182,7 +224,11 @@ p { max-width: 68ch; }
   box-shadow: var(--card-shadow);
 }
 
-.section-divider { border: none; border-top: 1px solid var(--border); margin-block: 0; }
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin-block: 0;
+}
 
 .display-heading {
   font-family: var(--font-display);
@@ -252,17 +298,53 @@ p { max-width: 68ch; }
   border-radius: 6px;
 }
 
-.disclaimer-text { font-size: 0.75rem; line-height: 1.6; color: var(--muted); }
-.trust-bar-fill { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.disclaimer-text {
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
 
-.hover-lift { transition: transform 0.15s ease, box-shadow 0.15s ease; }
-.hover-lift:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
+.trust-bar-fill {
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-.see-also-link { transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease; }
-.see-also-link:hover { background: var(--surface-raised) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+.hover-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
 
-.category-nav-btn { transition: background 0.12s ease, border-color 0.12s ease; }
-.category-nav-btn:hover { background: var(--surface-raised) !important; border-color: var(--border-strong) !important; }
+.see-also-link {
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.see-also-link:hover {
+  background: var(--surface-raised) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
 
-.cta-ghost-btn { transition: border-color 0.12s ease, color 0.12s ease; }
-.cta-ghost-btn:hover { border-color: rgb(255 255 255 / 0.45) !important; color: rgb(255 255 255 / 1) !important; }
+.category-nav-btn {
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.category-nav-btn:hover {
+  background: var(--surface-raised) !important;
+  border-color: var(--border-strong) !important;
+}
+
+.cta-ghost-btn {
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.cta-ghost-btn:hover {
+  border-color: rgb(255 255 255 / 0.45) !important;
+  color: rgb(255 255 255 / 1) !important;
+}
+
+/* ── Dark section heading override ─────────────────────────────────────── */
+/* The base h1-h6 rule sets color: var(--foreground), which is dark.
+   On navy hero backgrounds, headings need explicit white. Apply this
+   class to any heading rendered on a dark (brand-navy) section. */
+.dark-section-heading {
+  color: #ffffff !important;
+}
