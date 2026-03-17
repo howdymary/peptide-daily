@@ -272,6 +272,7 @@ export default async function HomePage() {
             {/* Headline — DM Serif Display */}
             <h1
               className="display-heading text-4xl text-white sm:text-5xl lg:text-6xl"
+              style={{ color: "#ffffff" }}
             >
               Independent peptide data,<br />
                 <em className="not-italic" style={{ color: "var(--brand-accent)" }}
@@ -385,6 +386,7 @@ export default async function HomePage() {
                 </div>
                 <h2
                   className="display-heading text-2xl text-white sm:text-3xl"
+                  style={{ color: "#ffffff" }}
                 >
                   Highest-rated by lab grade and Trust Score
                 </h2>
@@ -626,7 +628,8 @@ export default async function HomePage() {
             </div>
             <h2
               className="display-heading text-3xl text-white sm:text-4xl"
-            >
+                style={{ color: "#ffffff" }}
+              >
               Compare vendors across lab data, price, and reviews
             </h2>
             <p className="mt-4 text-sm leading-relaxed" style={{ color: "rgb(255 255 255 / 0.6)" }}>
