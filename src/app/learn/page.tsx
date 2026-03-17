@@ -10,21 +10,14 @@ import {
 import type { PeptideContent } from "@/lib/learn/peptide-data";
 
 export const metadata = {
-  title: "Peptide Education Hub — Peptide Daily",
+  title: "Peptide Education Hub — Research-Led Guides and Reference",
   description:
-    "Research-led educational overviews of 15 key peptides — from FDA-approved metabolic medications to investigational compounds and research chemicals. Each page includes clinical context, references, and regulatory status.",
+    "Educational overviews of 15+ key peptides — from FDA-approved medications to investigational compounds. Clinical context, peer-reviewed references, and current regulatory status.",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
-
-const CATEGORY_ICONS: Record<PeptideContent["category"], string> = {
-  metabolic: "⚡",
-  "growth-hormone": "📈",
-  "tissue-repair": "🔬",
-  melanocortin: "✦",
-};
 
 const CATEGORY_DESCRIPTIONS: Record<PeptideContent["category"], string> = {
   metabolic:
@@ -45,7 +38,7 @@ function PeptideCard({ peptide }: { peptide: PeptideContent }) {
   const regColor = REGULATORY_COLORS[peptide.regulatoryStatus];
   const shortOverview =
     peptide.overview[0].length > 160
-      ? peptide.overview[0].slice(0, 158) + "…"
+      ? peptide.overview[0].slice(0, 158) + "\u2026"
       : peptide.overview[0];
 
   return (
@@ -60,10 +53,7 @@ function PeptideCard({ peptide }: { peptide: PeptideContent }) {
       }}
     >
       {/* Top accent based on regulatory status */}
-      <div
-        className="h-1 w-full shrink-0"
-        style={{ background: regColor.text }}
-      />
+      <div className="h-1 w-full shrink-0" style={{ background: regColor.text }} />
 
       <div className="flex flex-1 flex-col p-5">
         {/* Regulatory badge */}
@@ -113,7 +103,7 @@ function PeptideCard({ peptide }: { peptide: PeptideContent }) {
             className="text-sm font-semibold transition-opacity group-hover:opacity-70"
             style={{ color: "var(--accent)" }}
           >
-            Read more →
+            Read more \u2192
           </span>
         </div>
       </div>
@@ -153,26 +143,29 @@ export default function LearnPage() {
           }}
           aria-hidden="true"
         />
+
         <div className="container-page relative">
           <div className="max-w-2xl">
             <div className="section-label-light mb-5">Peptide Education</div>
+
             <h1
-              className="display-heading text-4xl text-white sm:text-5xl"
+              className="display-heading text-4xl sm:text-5xl"
+              style={{ color: "#ffffff" }}
             >
-              The peptide research
-              <br />
-              <em className="not-italic" style={{ color: "var(--brand-gold)" }}>
+              The peptide research <br />
+              <em className="not-italic" style={{ color: "var(--brand-accent)" }}>
                 reference library.
               </em>
             </h1>
+
             <p
               className="mt-5 text-base leading-relaxed sm:text-lg"
               style={{ color: "rgb(255 255 255 / 0.65)" }}
             >
-              Research-led educational overviews of 15 key peptides — from
-              FDA-approved prescription medications to investigational compounds
-              and research chemicals. Each page includes clinical context, source
-              references, and regulatory status.
+              Straightforward educational overviews of 15 peptides currently in
+              the research conversation — from FDA-approved prescription
+              medications to compounds still in preclinical trials. Every page
+              cites its sources.
             </p>
 
             {/* Stats strip */}
@@ -186,7 +179,7 @@ export default function LearnPage() {
                 <div key={stat.label}>
                   <p
                     className="text-2xl font-bold"
-                    style={{ color: "var(--brand-gold)" }}
+                    style={{ color: "var(--brand-accent)" }}
                   >
                     {stat.value}
                   </p>
@@ -209,12 +202,16 @@ export default function LearnPage() {
         }}
       >
         <div className="container-page">
-          <p className="text-xs leading-relaxed" style={{ color: "var(--info-text)" }}>
-            <strong>Educational content only.</strong> The information on these pages is for
-            educational purposes only. It does not constitute medical advice, diagnosis, or
-            treatment recommendations. Always consult a qualified healthcare professional
-            before making decisions related to any medication or health intervention.
-            Regulations and product availability vary by country and jurisdiction.
+          <p
+            className="text-xs leading-relaxed"
+            style={{ color: "var(--info-text)" }}
+          >
+            <strong>Educational content only.</strong> The information on these
+            pages is for educational purposes only. It does not constitute medical
+            advice, diagnosis, or treatment recommendations. Always consult a
+            qualified healthcare professional before making decisions related to
+            any medication or health intervention. Regulations and product
+            availability vary by country and jurisdiction.
           </p>
         </div>
       </div>
@@ -224,7 +221,7 @@ export default function LearnPage() {
         <div className="container-page">
           <p
             className="mb-4 text-xs font-bold uppercase tracking-widest"
-            style={{ color: "var(--brand-gold)" }}
+            style={{ color: "var(--brand-accent)" }}
           >
             Regulatory Status Key
           </p>
@@ -274,10 +271,10 @@ export default function LearnPage() {
               }}
             >
               <div className="container-page">
-                {/* Section header */}
+                {/* Section header — no emoji */}
                 <div className="mb-8">
                   <div className="section-label mb-3">
-                    {CATEGORY_ICONS[category]} {CATEGORY_LABELS[category]}
+                    {CATEGORY_LABELS[category]}
                   </div>
                   <p
                     className="max-w-2xl text-sm leading-relaxed"
@@ -309,9 +306,10 @@ export default function LearnPage() {
             Ready to compare?
           </div>
           <h2
-            className="display-heading text-3xl text-white"
+            className="display-heading text-3xl"
+            style={{ color: "#ffffff" }}
           >
-            Compare vendor prices and lab grades
+            Compare prices and lab grades across verified vendors
           </h2>
           <p
             className="mt-3 text-sm"
@@ -324,19 +322,19 @@ export default function LearnPage() {
             <Link
               href="/peptides"
               className="rounded-lg px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90"
-              style={{ background: "var(--brand-gold)", color: "#fff" }}
+              style={{ background: "var(--brand-accent)", color: "#fff" }}
             >
-              Browse Price Catalog
+              Compare Prices
             </Link>
             <Link
               href="/vendors"
-              className="rounded-lg border px-6 py-3 text-sm font-medium text-white transition-colors"
+              className="cta-ghost-btn rounded-lg border px-6 py-3 text-sm font-medium text-white transition-colors"
               style={{
                 borderColor: "rgb(255 255 255 / 0.25)",
                 color: "rgb(255 255 255 / 0.85)",
               }}
             >
-              View Vendors
+              View Vendor Ratings
             </Link>
           </div>
         </div>
