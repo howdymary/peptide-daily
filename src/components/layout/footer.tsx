@@ -66,8 +66,8 @@ export function Footer() {
               className="mt-4 text-sm leading-relaxed"
               style={{ color: "rgb(255 255 255 / 0.55)" }}
             >
-              Lab-verified peptide quality data and price comparison for
-              evidence-driven consumers.
+              Independent peptide price comparison backed by
+              third-party lab data from Finnrick.
             </p>
 
             <p
