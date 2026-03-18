@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -52,7 +53,7 @@ export function Header() {
           WebkitBackdropFilter: "blur(8px)",
         }}
       >
-        <div className="container-page flex h-14 items-center justify-between gap-6">
+        <div className="container-page flex h-16 items-center justify-between gap-6">
           {/* Logo */}
           <Link
             href="/"
@@ -95,12 +96,12 @@ export function Header() {
                   style={{
                     color: active ? "var(--brand-navy)" : "var(--muted)",
                   }}
-                  onMouseEnter={(e) => {
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     if (!active)
                       (e.currentTarget as HTMLElement).style.color =
                         "var(--foreground)";
                   }}
-                  onMouseLeave={(e) => {
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     if (!active)
                       (e.currentTarget as HTMLElement).style.color =
                         "var(--muted)";
@@ -128,13 +129,13 @@ export function Header() {
                 border: "1px solid var(--border)",
                 background: "transparent",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 const el = e.currentTarget as HTMLElement;
                 el.style.background = "var(--surface-raised)";
                 el.style.borderColor = "var(--border-strong)";
                 el.style.color = "var(--foreground)";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 const el = e.currentTarget as HTMLElement;
                 el.style.background = "transparent";
                 el.style.borderColor = "var(--border)";
@@ -150,11 +151,11 @@ export function Header() {
                 background: "var(--brand-navy)",
                 boxShadow: "0 1px 2px 0 rgb(15 39 68 / 0.15)",
               }}
-              onMouseEnter={(e) => {
+              onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 (e.currentTarget as HTMLElement).style.background =
                   "var(--brand-navy-light)";
               }}
-              onMouseLeave={(e) => {
+              onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
                 (e.currentTarget as HTMLElement).style.background =
                   "var(--brand-navy)";
               }}
@@ -165,7 +166,7 @@ export function Header() {
 
           {/* Mobile hamburger */}
           <button
-            className="flex h-9 w-9 items-center justify-center rounded-md transition-colors md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-md transition-colors md:hidden"
             style={{ color: "var(--muted)" }}
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
@@ -237,4 +238,3 @@ export function Header() {
     </header>
   );
 }
-
