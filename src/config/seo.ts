@@ -199,6 +199,11 @@ export function buildMetadata(path: string): Metadata {
       type: "website",
       url: config.canonical,
     },
+    twitter: {
+      card: "summary_large_image",
+      title: config.title,
+      description: config.description,
+    },
   };
 }
 
@@ -224,6 +229,10 @@ export function buildPeptideDetailMeta(peptide: {
       siteName: SITE_NAME,
       type: "website",
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
-
