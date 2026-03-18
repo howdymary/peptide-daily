@@ -2,25 +2,28 @@ import { Suspense } from "react";
 import { SearchFilters } from "@/components/peptides/search-filters";
 import { PeptideList } from "@/components/peptides/peptide-list";
 import { CatalogGuideTip } from "@/components/ui/onboarding-tip";
+import { buildMetadata } from "@/config/seo";
+import { JsonLd } from "@/components/seo/json-ld";
 
-export const metadata = {
-  title: "Peptide Catalog — Compare Prices, Lab Grades, and Reviews",
-  description:
-    "Browse 50+ peptides with live vendor pricing, Finnrick lab grades, and community reviews. Filter by category, price, and lab quality.",
-};
+export const metadata = buildMetadata("/peptides");
 
 export default function PeptidesPage() {
   return (
     <div className="container-page py-8">
+      <JsonLd path="/peptides" />
+
       {/* Page header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1
-          className="text-2xl font-bold"
+          className="display-heading text-3xl sm:text-4xl"
           style={{ color: "var(--foreground)" }}
         >
           Compare Peptide Prices and Lab Grades
         </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--muted)" }}>
+        <p
+          className="mt-2 text-sm sm:text-base leading-relaxed"
+          style={{ color: "var(--muted)" }}
+        >
           Live vendor pricing updated every 15 minutes, alongside independent
           Finnrick lab grades and community reviews. Filter by category, price
           range, or lab quality.
