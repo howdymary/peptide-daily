@@ -3,25 +3,56 @@ import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
+const SITE_NAME = "Peptide Daily";
+const SITE_URL = "https://peptidedaily.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Peptide Daily — Lab-Verified Peptide Price Comparison",
-    template: "%s — Peptide Daily",
+    default: "Peptide Daily \u2014 Lab-Verified Peptide Price Comparison",
+    template: "%s \u2014 Peptide Daily",
   },
   description:
     "Compare peptide prices across vendors with third-party lab testing data from Finnrick. Evidence-driven quality ratings, community reviews, and real-time pricing.",
   keywords: [
     "peptides",
     "peptide comparison",
+    "peptide prices",
     "Finnrick ratings",
     "BPC-157",
     "semaglutide",
     "research chemicals",
     "lab testing",
+    "peptide vendors",
   ],
+  authors: [{ name: SITE_NAME, url: SITE_URL }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   openGraph: {
-    siteName: "Peptide Daily",
+    siteName: SITE_NAME,
     type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Peptide Daily \u2014 Lab-Verified Peptide Price Comparison",
+    description:
+      "Compare peptide prices with third-party lab data from Finnrick. Evidence-based quality ratings and real-time pricing.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: SITE_URL,
   },
 };
 
