@@ -39,7 +39,8 @@ export function Header() {
           Finnrick
         </a>
         <span>
-          {" "}\u00b7 Prices refresh every 15 min \u00b7 For research purposes only
+          {" "}{"\u00b7"} Prices refresh every 15 min {"\u00b7"} For research
+          purposes only
         </span>
       </div>
 
@@ -71,7 +72,7 @@ export function Header() {
               className="text-lg leading-none"
               style={{
                 fontFamily: "var(--font-display)",
-                color: "var(--brand-navy)",
+                color: "var(--foreground)",
                 letterSpacing: "-0.01em",
               }}
             >
@@ -94,7 +95,9 @@ export function Header() {
                   href={link.href}
                   className="relative rounded-md px-3 py-2 text-sm font-medium transition-colors"
                   style={{
-                    color: active ? "var(--brand-navy)" : "var(--muted)",
+                    color: active
+                      ? "var(--foreground)"
+                      : "var(--muted)",
                   }}
                   onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
                     if (!active)
@@ -167,18 +170,40 @@ export function Header() {
           {/* Mobile hamburger */}
           <button
             className="flex h-10 w-10 items-center justify-center rounded-md transition-colors md:hidden"
-            style={{ color: "var(--muted)" }}
+            style={{ color: "var(--foreground-secondary)" }}
             onClick={() => setMobileOpen((v) => !v)}
             aria-expanded={mobileOpen}
             aria-label="Toggle mobile menu"
           >
             {mobileOpen ? (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             ) : (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             )}
           </button>
@@ -193,7 +218,10 @@ export function Header() {
               borderColor: "var(--border)",
             }}
           >
-            <nav className="flex flex-col gap-0.5" aria-label="Mobile navigation">
+            <nav
+              className="flex flex-col gap-0.5"
+              aria-label="Mobile navigation"
+            >
               {NAV_LINKS.map((link) => {
                 const active = pathname === link.href;
                 return (
@@ -202,8 +230,12 @@ export function Header() {
                     href={link.href}
                     className="rounded-md px-3 py-3 text-sm font-medium transition-colors"
                     style={{
-                      color: active ? "var(--brand-navy)" : "var(--muted)",
-                      background: active ? "var(--surface-raised)" : "transparent",
+                      color: active
+                        ? "var(--foreground)"
+                        : "var(--muted)",
+                      background: active
+                        ? "var(--surface-raised)"
+                        : "transparent",
                     }}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -211,7 +243,10 @@ export function Header() {
                   </Link>
                 );
               })}
-              <hr className="my-3" style={{ borderColor: "var(--border)" }} />
+              <hr
+                className="my-3"
+                style={{ borderColor: "var(--border)" }}
+              />
               <Link
                 href="/auth/signin"
                 className="rounded-md px-3 py-3 text-sm font-medium transition-colors"
