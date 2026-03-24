@@ -19,11 +19,11 @@ interface GuideCardProps {
 }
 
 const CATEGORY_STYLES: Record<string, { accent: string; bg: string; text: string }> = {
-  "Getting Started": { accent: "#0570b0", bg: "#f0f9ff", text: "#0284c7" },
-  "Research Basics":  { accent: "#0d9488", bg: "#f0fdfa", text: "#0d9488" },
-  "Peptide Profiles": { accent: "#7c3aed", bg: "#fdf4ff", text: "#9333ea" },
-  "Lab Testing":      { accent: "#c2410c", bg: "#fff7ed", text: "#c2410c" },
-  "Safety":           { accent: "#dc2626", bg: "#fef2f2", text: "#dc2626" },
+  "Getting Started": { accent: "#0D6E6E", bg: "#E6F5F5", text: "#0A5858" },
+  "Research Basics":  { accent: "#1A8F8F", bg: "#E6F5F5", text: "#0D6E6E" },
+  "Peptide Profiles": { accent: "#1B2A4A", bg: "#EDF2F7", text: "#1B2A4A" },
+  "Lab Testing":      { accent: "#E8A838", bg: "#FFF8E7", text: "#b45309" },
+  "Safety":           { accent: "#c23030", bg: "#fdf2f2", text: "#c23030" },
 };
 
 function getStyle(cat: string) {

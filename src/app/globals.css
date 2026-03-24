@@ -1,43 +1,38 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* ── Design Tokens ──────────────────────────────────────────────────────── */
+/* ── Design Tokens (aligned to Peptide Daily Brand Brief) ──────────────── */
 
 :root {
-  /* Brand palette — clinical, warm, trustworthy */
-  --brand-navy: #0f2744;
-  --brand-navy-light: #1a3a5c;
-  --brand-teal: #0d9488;
-  --brand-teal-light: #14b8a6;
+  /* Brand palette */
+  --brand-navy: #1B2A4A;
+  --brand-navy-light: #253a5e;
+  --brand-teal: #0D6E6E;
+  --brand-teal-light: #1A8F8F;
 
-  /*
-   * Primary accent — warm copper instead of bright gold.
-   * Bright gold reads as generic AI template. This muted copper
-   * is closer to what a designer at a consumer health startup
-   * would ship.
-   */
-  --brand-accent: #b07832;
-  --brand-accent-hover: #96642a;
-  --brand-accent-light: #f5efe6;
+  /* Accent — amber for CTAs, badges, alerts */
+  --brand-accent: #E8A838;
+  --brand-accent-hover: #d49730;
+  --brand-accent-light: #FFF8E7;
 
-  /* Fonts */
-  --font-display: "DM Serif Display", Georgia, serif;
+  /* Fonts — geometric sans only, no serif */
+  --font-display: "Outfit", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Neutrals — warm, paper-like */
-  --background: #faf9f7;
+  /* Neutrals — cool slate per brand brief */
+  --background: #F7FAFC;
   --surface: #ffffff;
-  --surface-raised: #f0ede8;
-  --foreground: #1a2332;
-  --foreground-secondary: #3b4553;
-  --muted: #6b7280;
-  --muted-light: #9ca3af;
-  --border: #e2ddd6;
-  --border-strong: #c9c3ba;
+  --surface-raised: #EDF2F7;
+  --foreground: #2D3748;
+  --foreground-secondary: #4A5568;
+  --muted: #4A5568;
+  --muted-light: #718096;
+  --border: #CBD5E0;
+  --border-strong: #A0AEC0;
 
-  /* Semantic — action colors */
-  --accent: #1a6b8a;
-  --accent-hover: #145a74;
+  /* Semantic — primary teal as action color */
+  --accent: #0D6E6E;
+  --accent-hover: #0A5858;
   --accent-fg: #ffffff;
 
   --success: #0f7b5f;
@@ -45,38 +40,38 @@
   --success-border: #b0e4cd;
 
   --warning: #b45309;
-  --warning-bg: #fef8ee;
+  --warning-bg: #FFF8E7;
   --warning-border: #f5d99a;
 
   --danger: #c23030;
   --danger-bg: #fdf2f2;
   --danger-border: #f5c6c6;
 
-  --info: #1a6b8a;
-  --info-bg: #f0f7fa;
-  --info-border: #b8dae8;
-  --info-text: #0e4d64;
+  --info: #0D6E6E;
+  --info-bg: #E6F5F5;
+  --info-border: #99d6d6;
+  --info-text: #0A5858;
 
   /* Cards */
   --card-bg: #ffffff;
-  --card-border: #e2ddd6;
-  --card-shadow: 0 1px 2px 0 rgb(26 35 50 / 0.04),
-    0 1px 3px -1px rgb(26 35 50 / 0.03);
-  --card-shadow-md: 0 4px 12px -2px rgb(26 35 50 / 0.07),
-    0 2px 4px -2px rgb(26 35 50 / 0.04);
-  --card-shadow-hover: 0 8px 24px -4px rgb(26 35 50 / 0.10),
-    0 4px 8px -4px rgb(26 35 50 / 0.05);
+  --card-border: #CBD5E0;
+  --card-shadow: 0 1px 2px 0 rgb(27 42 74 / 0.04),
+    0 1px 3px -1px rgb(27 42 74 / 0.03);
+  --card-shadow-md: 0 4px 12px -2px rgb(27 42 74 / 0.07),
+    0 2px 4px -2px rgb(27 42 74 / 0.04);
+  --card-shadow-hover: 0 8px 24px -4px rgb(27 42 74 / 0.10),
+    0 4px 8px -4px rgb(27 42 74 / 0.05);
 
   /* Finnrick grade colors */
   --grade-a-bg: #eef9f4;
   --grade-a-text: #065f46;
   --grade-a-border: #6ee7b7;
 
-  --grade-b-bg: #f0fdfa;
-  --grade-b-text: #134e4a;
-  --grade-b-border: #99f6e4;
+  --grade-b-bg: #E6F5F5;
+  --grade-b-text: #0A5858;
+  --grade-b-border: #99d6d6;
 
-  --grade-c-bg: #fef8ee;
+  --grade-c-bg: #FFF8E7;
   --grade-c-text: #92400e;
   --grade-c-border: #f5d99a;
 
@@ -88,27 +83,27 @@
   --grade-e-text: #7f1d1d;
   --grade-e-border: #f5c6c6;
 
-  /* Legacy aliases (backward compat) */
+  /* Legacy aliases */
   --brand-gold: var(--brand-accent);
   --brand-gold-light: var(--brand-accent-light);
-  --brand-sky: #0ea5e9;
-  --brand-sky-light: #38bdf8;
+  --brand-sky: #1A8F8F;
+  --brand-sky-light: #2cb5b5;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a121e;
-    --surface: #101e2e;
-    --surface-raised: #182638;
-    --foreground: #eef2f7;
-    --foreground-secondary: #c0cad6;
-    --muted: #8c9aac;
-    --muted-light: #5e6f82;
-    --border: #1e2d3d;
-    --border-strong: #2a3f54;
+    --background: #0c1220;
+    --surface: #131f30;
+    --surface-raised: #1a2940;
+    --foreground: #E2E8F0;
+    --foreground-secondary: #A0AEC0;
+    --muted: #718096;
+    --muted-light: #4A5568;
+    --border: #2D3748;
+    --border-strong: #4A5568;
 
-    --card-bg: #101e2e;
-    --card-border: #1e2d3d;
+    --card-bg: #131f30;
+    --card-border: #2D3748;
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3);
     --card-shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.3);
     --card-shadow-hover: 0 12px 28px -4px rgb(0 0 0 / 0.35);
@@ -119,21 +114,21 @@
     --warning-border: #92400e;
     --danger-bg: #1c0a0a;
     --danger-border: #7f1d1d;
-    --info-bg: #0a1929;
-    --info-border: #075985;
-    --info-text: #bae6fd;
+    --info-bg: #0a2020;
+    --info-border: #0A5858;
+    --info-text: #99d6d6;
 
     --brand-accent-light: #2d1f00;
-    --accent: #38a3c7;
-    --accent-hover: #2b8dad;
+    --accent: #2cb5b5;
+    --accent-hover: #1A8F8F;
 
     --grade-a-bg: #022c22;
     --grade-a-text: #6ee7b7;
     --grade-a-border: #065f46;
 
-    --grade-b-bg: #022019;
-    --grade-b-text: #99f6e4;
-    --grade-b-border: #134e4a;
+    --grade-b-bg: #0a2020;
+    --grade-b-text: #99d6d6;
+    --grade-b-border: #0A5858;
 
     --grade-c-bg: #1c1400;
     --grade-c-text: #fde68a;

@@ -9,6 +9,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,23 +84,25 @@ export default function SignInPage() {
         </button>
       </form>
 
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[var(--border)]" />
+      {googleEnabled && (
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[var(--border)]" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[var(--background)] px-2 text-[var(--muted)]">Or</span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-[var(--background)] px-2 text-[var(--muted)]">Or</span>
-          </div>
-        </div>
 
-        <button
-          onClick={() => signIn("google", { callbackUrl: "/peptides" })}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-6 py-2.5 text-sm font-medium transition-colors hover:bg-[var(--card-bg)]"
-        >
-          Sign in with Google
-        </button>
-      </div>
+          <button
+            onClick={() => signIn("google", { callbackUrl: "/peptides" })}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-[var(--border)] px-6 py-2.5 text-sm font-medium transition-colors hover:bg-[var(--card-bg)]"
+          >
+            Sign in with Google
+          </button>
+        </div>
+      )}
 
       <p className="mt-6 text-center text-sm text-[var(--muted)]">
         Don&apos;t have an account?{" "}

@@ -21,11 +21,11 @@ export interface PeptideSnapshotData {
 
 /** Category → left-border accent color */
 const CATEGORY_ACCENT: Record<string, string> = {
-  "GLP-1":          "#0570b0",
-  "Recovery":       "#0d9488",
-  "Growth Hormone": "#7c3aed",
-  "Cosmetic":       "#db2777",
-  "Nootropic":      "#059669",
+  "GLP-1":          "#0D6E6E",
+  "Recovery":       "#1A8F8F",
+  "Growth Hormone": "#1B2A4A",
+  "Cosmetic":       "#0A5858",
+  "Nootropic":      "#0D6E6E",
 };
 
 function categoryAccent(cat: string | null): string {

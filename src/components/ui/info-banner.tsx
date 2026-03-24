@@ -38,9 +38,9 @@ const VARIANT_STYLES: Record<
 > = {
   info: {
     bg: "var(--info-bg)",
-    border: "var(--info-border, #bae6fd)",
-    iconColor: "var(--info-icon, #0284c7)",
-    titleColor: "var(--info-title, #0c4a6e)",
+    border: "var(--info-border, #99d6d6)",
+    iconColor: "var(--info-icon, #0D6E6E)",
+    titleColor: "var(--info-title, #0A5858)",
     textColor: "var(--info-text)",
   },
   success: {

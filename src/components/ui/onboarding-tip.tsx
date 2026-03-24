@@ -64,8 +64,8 @@ export function OnboardingTip({
 
   return (
     <div
-      className={`rounded-xl border border-[var(--brand-sky,#38bdf8)]/30 bg-[#f0f9ff] px-4 py-3 ${className}`}
-      style={{ borderColor: "#bae6fd" }}
+      className={`rounded-xl border px-4 py-3 ${className}`}
+      style={{ borderColor: "#99d6d6", background: "#E6F5F5" }}
     >
       {/* Header row */}
       <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export function OnboardingTip({
             fill="currentColor"
             className="h-3.5 w-3.5 shrink-0 transition-transform"
             style={{
-              color: "#0284c7",
+              color: "#0D6E6E",
               transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
             }}
             aria-hidden="true"
@@ -105,7 +105,7 @@ export function OnboardingTip({
             onClick={dismiss}
             aria-label="Dismiss tip"
             className="shrink-0 rounded p-0.5 opacity-60 hover:opacity-100 focus-visible:outline-none"
-            style={{ color: "#0284c7" }}
+            style={{ color: "#0D6E6E" }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

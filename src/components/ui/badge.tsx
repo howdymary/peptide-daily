@@ -38,8 +38,8 @@ const VARIANT_STYLES: Record<BadgeVariant, { color: string; bg: string; border: 
   },
   brand: {
     color: "var(--brand-navy)",
-    bg: "#e0f2fe",
-    border: "#bae6fd",
+    bg: "#E6F5F5",
+    border: "#99d6d6",
   },
 };
 

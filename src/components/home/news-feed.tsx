@@ -97,9 +97,9 @@ export function NewsFeed({ articles, allTags }: NewsFeedProps) {
             onClick={() => setActiveTag(null)}
             className="rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
             style={{
-              background: activeTag === null ? "var(--brand-sky, #0ea5e9)" : "transparent",
+              background: activeTag === null ? "var(--brand-sky, #1A8F8F)" : "transparent",
               color: activeTag === null ? "white" : "var(--muted)",
-              border: `1px solid ${activeTag === null ? "var(--brand-sky, #0ea5e9)" : "var(--border)"}`,
+              border: `1px solid ${activeTag === null ? "var(--brand-sky, #1A8F8F)" : "var(--border)"}`,
             }}
           >
             All
@@ -110,9 +110,9 @@ export function NewsFeed({ articles, allTags }: NewsFeedProps) {
               onClick={() => setActiveTag(activeTag === tag ? null : tag)}
               className="rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
               style={{
-                background: activeTag === tag ? "var(--brand-sky, #0ea5e9)" : "transparent",
+                background: activeTag === tag ? "var(--brand-sky, #1A8F8F)" : "transparent",
                 color: activeTag === tag ? "white" : "var(--muted)",
-                border: `1px solid ${activeTag === tag ? "var(--brand-sky, #0ea5e9)" : "var(--border)"}`,
+                border: `1px solid ${activeTag === tag ? "var(--brand-sky, #1A8F8F)" : "var(--border)"}`,
               }}
             >
               {tag}

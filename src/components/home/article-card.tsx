@@ -82,7 +82,7 @@ function HeroArticleCard({ article }: { article: ArticleCardData }) {
           </span>
         </div>
 
-        {/* Title — DM Serif Display */}
+        {/* Title */}
         <h3
           className="flex-1 text-2xl leading-snug transition-colors group-hover:text-[var(--accent)] sm:text-3xl"
           style={{

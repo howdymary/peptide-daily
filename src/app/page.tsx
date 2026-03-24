@@ -311,7 +311,7 @@ export default async function HomePage() {
                                                           Independent Research Hub
                                             </div>
                                 
-                                  {/* Headline — DM Serif Display */}
+                                  {/* Headline */}
                                             <h1
                                                             className="display-heading text-4xl sm:text-5xl lg:text-6xl"
                                                             style={{ color: "#ffffff" }}

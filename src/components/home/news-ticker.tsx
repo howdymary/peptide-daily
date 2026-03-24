@@ -79,7 +79,7 @@ export function NewsTickerBanner({ items }: NewsTickerBannerProps) {
   const displayItems = [...items, ...items];
 
   const dotColor = (type: TickerItem["type"]) =>
-    type === "price" ? "var(--brand-teal)" : "var(--brand-sky, #0ea5e9)";
+    type === "price" ? "var(--brand-teal)" : "var(--brand-sky, #1A8F8F)";
 
   // ── Reduced-motion: single fading headline ──────────────────────────────
   if (reducedMotion) {
@@ -238,7 +238,7 @@ export function NewsTickerBanner({ items }: NewsTickerBannerProps) {
 }
 
 function TickerItemEl({ item }: { item: TickerItem }) {
-  const dotColor = item.type === "price" ? "var(--brand-teal)" : "var(--brand-sky, #0ea5e9)";
+  const dotColor = item.type === "price" ? "var(--brand-teal)" : "var(--brand-sky, #1A8F8F)";
 
   const inner = (
     <span className="flex items-center gap-2 px-6">

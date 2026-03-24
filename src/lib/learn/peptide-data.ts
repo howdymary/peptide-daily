@@ -97,7 +97,7 @@ export const REGULATORY_COLORS: Record<
   "investigational":  { bg: "#eff6ff", text: "#1d4ed8", border: "#bfdbfe" },
   "research-chemical":{ bg: "#fef2f2", text: "#991b1b", border: "#fecaca" },
   "compounded":       { bg: "#fffbeb", text: "#92400e", border: "#fde68a" },
-  "approved-china":   { bg: "#f0fdfa", text: "#134e4a", border: "#99f6e4" },
+  "approved-china":   { bg: "#E6F5F5", text: "#0A5858", border: "#99d6d6" },
 };
 
 export const GOAL_LABELS: Record<GoalTag, string> = {
