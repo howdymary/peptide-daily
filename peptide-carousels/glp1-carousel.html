@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLP-1 Peptides: The Science Behind Ozempic</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #1e40af;
+            --accent-green: #059669;
+            --warning-amber: #d97706;
+            --danger-red: #dc2626;
+            --success-emerald: #10b981;
+            --neutral-slate: #475569;
+            --bg-gradient: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            overflow-x: auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .carousel-container {
+            display: flex;
+            gap: 25px;
+            padding: 20px 0;
+            min-width: fit-content;
+        }
+
+        .slide {
+            width: 400px;
+            height: 400px;
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(30, 64, 175, 0.15);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+        }
+
+        .slide:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(30, 64, 175, 0.25);
+        }
+
+        /* Medical pattern overlay */
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill-opacity='0.03' fill='%23000'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3Ccircle cx='0' cy='0' r='2'/%3E%3Ccircle cx='0' cy='60' r='2'/%3E%3Ccircle cx='60' cy='0' r='2'/%3E%3Ccircle cx='60' cy='60' r='2'/%3E%3C/g%3E%3C/svg%3E");
+            z-index: 0;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slide 1 - Title */
+        .slide-1 {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #3b82f6 100%);
+            color: white;
+        }
+
+        .slide-1 h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(45deg, #ffffff, #bfdbfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide-1 .subtitle {
+            font-size: 1.3rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .slide-1 .hero-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        /* Slide 2 - What are GLP-1s */
+        .slide-2 {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            color: var(--neutral-slate);
+        }
+
+        .slide-2 h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 24px;
+            color: var(--accent-green);
+        }
+
+        .info-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.1);
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .info-card strong {
+            color: var(--accent-green);
+        }
+
+        /* Slide 3 - How it works */
+        .slide-3 {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: var(--neutral-slate);
+        }
+
+        .slide-3 h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            color: var(--warning-amber);
+        }
+
+        .mechanism-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .mechanism-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1);
+        }
+
+        .mechanism-icon {
+            margin-right: 16px;
+            font-size: 1.8rem;
+            min-width: 40px;
+        }
+
+        .mechanism-text {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* Slide 4 - Benefits */
+        .slide-4 {
+            background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+            color: var(--neutral-slate);
+        }
+
+        .slide-4 h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            color: var(--primary-blue);
+        }
+
+        .benefits-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .benefit-item {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+            border-top: 3px solid var(--primary-blue);
+        }
+
+        .benefit-emoji {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Slide 5 - Risks */
+        .slide-5 {
+            background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+            color: var(--neutral-slate);
+        }
+
+        .slide-5 h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            color: var(--danger-red);
+        }
+
+        .risk-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .risk-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 4px solid var(--danger-red);
+        }
+
+        .risk-icon {
+            margin-right: 12px;
+            color: var(--danger-red);
+            font-size: 1.3rem;
+        }
+
+        /* Slide 6 - Bottom Line */
+        .slide-6 {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-green) 100%);
+            color: white;
+        }
+
+        .slide-6 h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 24px;
+        }
+
+        .takeaway-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cta {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fde68a;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: slideInUp 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <!-- Slide 1: Title -->
+        <div class="slide slide-1">
+            <div class="slide-number">1/6</div>
+            <div class="slide-content">
+                <h1>GLP-1</h1>
+                <p class="subtitle">The Science Behind Ozempic & Weight Loss</p>
+                <div class="hero-icon">💉</div>
+            </div>
+        </div>
+
+        <!-- Slide 2: What are GLP-1s -->
+        <div class="slide slide-2">
+            <div class="slide-number">2/6</div>
+            <div class="slide-content">
+                <h2>What is GLP-1?</h2>
+                <div class="info-card">
+                    <p><strong>Glucagon-Like Peptide-1</strong> is a hormone naturally produced in your intestines when you eat.</p>
+                </div>
+                <div class="info-card">
+                    <p>Synthetic versions (like semaglutide) are <strong>FDA-approved</strong> for diabetes and weight management.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: How it works -->
+        <div class="slide slide-3">
+            <div class="slide-number">3/6</div>
+            <div class="slide-content">
+                <h2>How It Works</h2>
+                <div class="mechanism-grid">
+                    <div class="mechanism-item">
+                        <span class="mechanism-icon">🧠</span>
+                        <span class="mechanism-text">Signals brain to feel full</span>
+                    </div>
+                    <div class="mechanism-item">
+                        <span class="mechanism-icon">🐌</span>
+                        <span class="mechanism-text">Slows gastric emptying</span>
+                    </div>
+                    <div class="mechanism-item">
+                        <span class="mechanism-icon">📉</span>
+                        <span class="mechanism-text">Reduces blood sugar spikes</span>
+                    </div>
+                    <div class="mechanism-item">
+                        <span class="mechanism-icon">🍽️</span>
+                        <span class="mechanism-text">Decreases food cravings</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Benefits -->
+        <div class="slide slide-4">
+            <div class="slide-number">4/6</div>
+            <div class="slide-content">
+                <h2>Proven Benefits</h2>
+                <div class="benefits-container">
+                    <div class="benefit-item">
+                        <span class="benefit-emoji">⚖️</span>
+                        <div>15-20% Weight Loss</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-emoji">❤️</span>
+                        <div>Heart Health</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-emoji">🩸</span>
+                        <div>Blood Sugar Control</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-emoji">🧪</span>
+                        <div>Clinical Trial Proven</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Risks -->
+        <div class="slide slide-5">
+            <div class="slide-number">5/6</div>
+            <div class="slide-content">
+                <h2>Side Effects</h2>
+                <div class="risk-list">
+                    <div class="risk-item">
+                        <span class="risk-icon">🤢</span>
+                        <span>Nausea & vomiting (common)</span>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-icon">💰</span>
+                        <span>Expensive ($800-1200/month)</span>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-icon">⚠️</span>
+                        <span>Potential thyroid concerns</span>
+                    </div>
+                    <div class="risk-item">
+                        <span class="risk-icon">🔄</span>
+                        <span>Weight regain if stopped</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Bottom Line -->
+        <div class="slide slide-6">
+            <div class="slide-number">6/6</div>
+            <div class="slide-content">
+                <h2>The Bottom Line</h2>
+                <div class="takeaway-box">
+                    <p>Unlike many peptides, GLP-1s are <strong>FDA-approved</strong> with robust clinical evidence for weight loss and diabetes management.</p>
+                </div>
+                <p class="cta">Consult your doctor to see if you're a candidate!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced hover effects
+        document.querySelectorAll('.slide').forEach(slide => {
+            slide.addEventListener('mouseenter', () => {
+                slide.style.transform = 'translateY(-8px) scale(1.02)';
+                slide.style.boxShadow = '0 25px 50px rgba(30, 64, 175, 0.25)';
+            });
+            
+            slide.addEventListener('mouseleave', () => {
+                slide.style.transform = 'translateY(0) scale(1)';
+                slide.style.boxShadow = '0 20px 40px rgba(30, 64, 175, 0.15)';
+            });
+        });
+
+        // Intersection observer for animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const animatableElements = entry.target.querySelectorAll('.mechanism-item, .benefit-item, .risk-item, .info-card');
+                    animatableElements.forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('animate-in');
+                        }, index * 100);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+
+        // Add staggered animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .mechanism-item, .benefit-item, .risk-item, .info-card {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

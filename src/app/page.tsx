@@ -16,6 +16,7 @@ import { GuideCard } from "@/components/home/guide-card";
 import { PeptideSnapshotCard } from "@/components/home/peptide-snapshot-card";
 import { NewsTickerBanner } from "@/components/home/news-ticker";
 import { JsonLd } from "@/components/seo/json-ld";
+import { NewsletterSignup } from "@/components/marketing/newsletter-signup";
 import type { FinnrickRatingItem, FinnrickGrade } from "@/types";
 import type { TickerItem } from "@/components/home/news-ticker";
 
@@ -383,6 +384,11 @@ export default async function HomePage() {
                                                         </Link>
                                                       ))}
                                             </div>
+
+                                  {/* Newsletter signup */}
+                                            <div className="mt-8">
+                                                          <NewsletterSignup variant="inline" dark />
+                                            </div>
                                 </div>
                       </div>
               </section>
@@ -650,6 +656,15 @@ export default async function HomePage() {
                       </div>
               </section>
         
+          {/* ── Newsletter CTA band ──────────────────────────────────────────── */}
+              <section className="py-12" style={{ background: "var(--surface)" }}>
+                      <div className="container-page">
+                                <div className="mx-auto max-w-xl">
+                                            <NewsletterSignup variant="card" />
+                                </div>
+                      </div>
+              </section>
+
           {/* ── Medical disclaimer ───────────────────────────────────────────── */}
               <section
                         className="border-t py-5"

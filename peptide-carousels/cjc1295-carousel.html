@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJC-1295: The Growth Hormone "Fountain of Youth"</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #7c3aed;
+            --secondary-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --warning-orange: #ea580c;
+            --success-green: #16a34a;
+            --danger-red: #dc2626;
+            --dark-bg: #0f0f23;
+            --light-text: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #1e1b4b 100%);
+            overflow-x: auto;
+            padding: 20px;
+            min-height: 100vh;
+            color: var(--light-text);
+        }
+
+        .carousel-container {
+            display: flex;
+            gap: 25px;
+            padding: 20px 0;
+            min-width: fit-content;
+        }
+
+        .slide {
+            width: 400px;
+            height: 400px;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .slide:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        /* Animated gradient borders */
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(124, 58, 237, 0.3), transparent);
+            border-radius: 20px;
+            animation: borderGlow 3s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.8; }
+        }
+
+        /* Cyberpunk grid pattern */
+        .slide::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(124, 58, 237, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(124, 58, 237, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slide 1 - Title */
+        .slide-1 {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-pink) 100%);
+            box-shadow: 0 25px 50px rgba(124, 58, 237, 0.3);
+        }
+
+        .slide-1 h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(45deg, #ffffff, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .slide-1 .subtitle {
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            max-width: 280px;
+        }
+
+        .slide-1 .dna-icon {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Slide 2 - What is it */
+        .slide-2 {
+            background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%);
+        }
+
+        .slide-2 h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Slide 3 - Claims */
+        .slide-3 {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+        }
+
+        .slide-3 h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            margin-bottom: 24px;
+            color: var(--success-green);
+        }
+
+        .claims-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .claim-item {
+            background: var(--card-bg);
+            padding: 16px 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(22, 163, 74, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .claim-item:hover {
+            background: rgba(22, 163, 74, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .claim-emoji {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Slide 4 - How it works */
+        .slide-4 {
+            background: linear-gradient(135deg, #451a03 0%, #7c2d12 100%);
+        }
+
+        .slide-4 h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            margin-bottom: 24px;
+            color: var(--warning-orange);
+        }
+
+        .mechanism-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border-left: 3px solid var(--warning-orange);
+        }
+
+        .step-number {
+            background: var(--warning-orange);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* Slide 5 - Reality Check */
+        .slide-5 {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+        }
+
+        .slide-5 h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            margin-bottom: 24px;
+            color: #fca5a5;
+        }
+
+        .warning-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .warning-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .warning-icon {
+            margin-right: 12px;
+            font-size: 1.5rem;
+            color: var(--danger-red);
+        }
+
+        .warning-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Slide 6 - Bottom Line */
+        .slide-6 {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--dark-bg) 100%);
+        }
+
+        .slide-6 h2 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: #a78bfa;
+        }
+
+        .conclusion-box {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .cta {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Glitch effect for emphasis */
+        .glitch {
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% {
+                transform: translate3d(0, 0, 0);
+            }
+            10%, 30%, 50%, 70% {
+                transform: translate3d(-1px, -1px, 0);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translate3d(1px, 1px, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <!-- Slide 1: Title -->
+        <div class="slide slide-1">
+            <div class="slide-number">1/6</div>
+            <div class="slide-content">
+                <h1 class="glitch">CJC-1295</h1>
+                <p class="subtitle">The Growth Hormone "Fountain of Youth" Peptide</p>
+                <div class="dna-icon">🧬</div>
+            </div>
+        </div>
+
+        <!-- Slide 2: What is it -->
+        <div class="slide slide-2">
+            <div class="slide-number">2/6</div>
+            <div class="slide-content">
+                <h2>What Is CJC-1295?</h2>
+                <div class="code-block">
+                    <span class="highlight">Growth Hormone Releasing Hormone (GHRH)</span> analog that stimulates pituitary gland
+                </div>
+                <div class="code-block">
+                    Synthetic peptide designed to <span class="highlight">increase HGH production</span> for extended periods
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Claims -->
+        <div class="slide slide-3">
+            <div class="slide-number">3/6</div>
+            <div class="slide-content">
+                <h2>The Hype Train</h2>
+                <div class="claims-grid">
+                    <div class="claim-item">
+                        <span class="claim-emoji">💪</span>
+                        <div>Muscle Growth</div>
+                    </div>
+                    <div class="claim-item">
+                        <span class="claim-emoji">🔥</span>
+                        <div>Fat Burning</div>
+                    </div>
+                    <div class="claim-item">
+                        <span class="claim-emoji">😴</span>
+                        <div>Better Sleep</div>
+                    </div>
+                    <div class="claim-item">
+                        <span class="claim-emoji">⚡</span>
+                        <div>More Energy</div>
+                    </div>
+                    <div class="claim-item">
+                        <span class="claim-emoji">🧠</span>
+                        <div>Mental Clarity</div>
+                    </div>
+                    <div class="claim-item">
+                        <span class="claim-emoji">🔬</span>
+                        <div>Anti-Aging</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: How it works -->
+        <div class="slide slide-4">
+            <div class="slide-number">4/6</div>
+            <div class="slide-content">
+                <h2>Mechanism</h2>
+                <div class="mechanism-flow">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <span>Binds to GHRH receptors in pituitary</span>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <span>Stimulates growth hormone release</span>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <span>Increases IGF-1 production in liver</span>
+                    </div>
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <span>Theoretically enhances recovery & growth</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Reality Check -->
+        <div class="slide slide-5">
+            <div class="slide-number">5/6</div>
+            <div class="slide-content">
+                <h2>Reality.exe</h2>
+                <div class="warning-grid">
+                    <div class="warning-item">
+                        <span class="warning-icon">🚫</span>
+                        <span class="warning-text">NOT FDA approved for anti-aging</span>
+                    </div>
+                    <div class="warning-item">
+                        <span class="warning-icon">🔬</span>
+                        <span class="warning-text">Limited human studies on benefits</span>
+                    </div>
+                    <div class="warning-item">
+                        <span class="warning-icon">⚠️</span>
+                        <span class="warning-text">Potential cancer risk from excess GH</span>
+                    </div>
+                    <div class="warning-item">
+                        <span class="warning-icon">💰</span>
+                        <span class="warning-text">Expensive experimental treatment</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Bottom Line -->
+        <div class="slide slide-6">
+            <div class="slide-number">6/6</div>
+            <div class="slide-content">
+                <h2>System Output</h2>
+                <div class="conclusion-box">
+                    <p>CJC-1295 has <strong>theoretical potential</strong> but lacks robust human data. The longevity claims are largely <strong>unproven marketing hype</strong>.</p>
+                </div>
+                <p class="cta">>>> Consult medical professional before experimenting</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced cyberpunk hover effects
+        document.querySelectorAll('.slide').forEach(slide => {
+            slide.addEventListener('mouseenter', () => {
+                slide.style.transform = 'translateY(-10px) scale(1.02)';
+                slide.style.boxShadow = '0 30px 60px rgba(124, 58, 237, 0.4)';
+            });
+            
+            slide.addEventListener('mouseleave', () => {
+                slide.style.transform = 'translateY(0) scale(1)';
+                slide.style.boxShadow = 'none';
+            });
+        });
+
+        // Typing animation for code blocks
+        function typeWriter(element, text, speed = 50) {
+            element.innerHTML = '';
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Intersection observer for animations
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Animate claim items
+                    const claimItems = entry.target.querySelectorAll('.claim-item');
+                    claimItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    });
+
+                    // Animate flow steps
+                    const flowSteps = entry.target.querySelectorAll('.flow-step');
+                    flowSteps.forEach((step, index) => {
+                        setTimeout(() => {
+                            step.style.opacity = '1';
+                            step.style.transform = 'translateX(0)';
+                        }, index * 150);
+                    });
+
+                    // Animate warning items
+                    const warningItems = entry.target.querySelectorAll('.warning-item');
+                    warningItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'translateY(0)';
+                        }, index * 120);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+
+        // Initial state for animations
+        const style = document.createElement('style');
+        style.textContent = `
+            .claim-item, .flow-step, .warning-item {
+                opacity: 0;
+                transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+            }
+            .claim-item {
+                transform: translateY(20px);
+            }
+            .flow-step {
+                transform: translateX(-20px);
+            }
+            .warning-item {
+                transform: translateY(15px);
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add random glitch effect to title
+        setInterval(() => {
+            const title = document.querySelector('.slide-1 h1');
+            title.style.textShadow = `
+                ${Math.random() * 10}px ${Math.random() * 10}px 0 #ff0080,
+                ${Math.random() * 10}px ${Math.random() * 10}px 0 #00ff80
+            `;
+            setTimeout(() => {
+                title.style.textShadow = '0 0 20px rgba(255, 255, 255, 0.3)';
+            }, 100);
+        }, 3000);
+    </script>
+</body>
+</html>

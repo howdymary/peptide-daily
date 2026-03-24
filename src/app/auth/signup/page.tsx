@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -53,6 +54,13 @@ export default function SignUpPage() {
 
   return (
     <div className="mx-auto max-w-md py-12">
+      <Image
+        src="/logo.png"
+        alt="Peptide Daily"
+        width={48}
+        height={48}
+        className="mb-6 rounded-lg"
+      />
       <h1 className="mb-2 text-2xl font-bold">Create Account</h1>
       <p className="mb-8 text-[var(--muted)]">
         Join Peptide Daily to compare prices and leave reviews.

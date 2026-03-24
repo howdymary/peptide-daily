@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { NewsletterSignup } from "@/components/marketing/newsletter-signup";
 
 const PEPTIDE_LINKS = [
   { href: "/peptides?search=bpc-157", label: "BPC-157" },
@@ -46,17 +48,13 @@ export function Footer() {
               className="flex items-center gap-2.5"
               aria-label="Peptide Daily home"
             >
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold"
-                style={{
-                  background: "rgb(255 255 255 / 0.10)",
-                  color: "rgb(255 255 255 / 0.9)",
-                  border: "1px solid rgb(255 255 255 / 0.15)",
-                }}
-                aria-hidden="true"
-              >
-                PD
-              </span>
+              <Image
+                src="/logo.png"
+                alt="Peptide Daily"
+                width={32}
+                height={32}
+                className="shrink-0 rounded-lg"
+              />
               <span
                 className="text-base leading-none text-white"
                 style={{ fontFamily: "var(--font-display)" }}
@@ -81,6 +79,11 @@ export function Footer() {
               <br />
               Finnrick data refreshed weekly.
             </p>
+
+            {/* Newsletter signup */}
+            <div className="mt-5">
+              <NewsletterSignup variant="inline" dark />
+            </div>
 
             {/* Disclaimer */}
             <div

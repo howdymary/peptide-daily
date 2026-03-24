@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -61,13 +62,13 @@ export function Header() {
             className="flex shrink-0 items-center gap-2.5"
             aria-label="Peptide Daily home"
           >
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white text-xs font-bold tracking-tight shrink-0"
-              style={{ background: "var(--brand-navy)" }}
-              aria-hidden="true"
-            >
-              PD
-            </span>
+            <Image
+              src="/logo.png"
+              alt="Peptide Daily"
+              width={32}
+              height={32}
+              className="shrink-0 rounded-lg"
+            />
             <span
               className="text-lg leading-none"
               style={{
