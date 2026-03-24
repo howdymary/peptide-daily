@@ -20,6 +20,9 @@ const RESOURCE_LINKS = [
 const LEGAL_LINKS = [
   { href: "/about#disclaimer", label: "Disclaimer" },
   { href: "/about#data-sources", label: "Data Sources" },
+  { href: "/disclosure", label: "How We Make Money" },
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Service" },
 ];
 
 const LINK_COLOR = "rgb(255 255 255 / 0.55)";

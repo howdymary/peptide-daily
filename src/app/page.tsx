@@ -494,7 +494,7 @@ export default async function HomePage() {
                                                 ))}
                                             </div>
                                             <Link
-                                                                  href="/guides"
+                                                                  href="/learn"
                                                                   className="mt-4 block text-sm font-medium transition-opacity hover:opacity-80"
                                                                   style={{ color: "var(--accent)" }}
                                                                 >
@@ -552,7 +552,7 @@ export default async function HomePage() {
                                                                       </h2>
                                                       </div>
                                                       <Link
-                                                                        href="/guides"
+                                                                        href="/learn"
                                                                         className="shrink-0 text-sm font-medium transition-opacity hover:opacity-80"
                                                                         style={{ color: "var(--accent)" }}
                                                                       >

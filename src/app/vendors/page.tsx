@@ -1,9 +1,14 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { prisma } from "@/lib/db/prisma";
 import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
+import type { Metadata } from "next";
 import type { FinnrickGrade } from "@/types";
+
+export const metadata: Metadata = {
+  title: "Peptide Vendors — Independent Reviews & Lab Testing | Peptide Daily",
+  description:
+    "Browse all peptide vendors with independent Finnrick lab testing results, purity grades, and pricing data. Compare vendors side-by-side with third-party verified quality scores.",
+};
 
 interface VendorSummary {
   id: string;
@@ -19,21 +24,72 @@ interface VendorSummary {
   vendorDomain: string | null;
 }
 
-export default function VendorsPage() {
-  const [vendors, setVendors] = useState<VendorSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function getVendors(): Promise<VendorSummary[]> {
+  const vendors = await prisma.vendor.findMany({
+    where: { isActive: true },
+    include: {
+      prices: {
+        select: { peptideId: true, price: true },
+        distinct: ["peptideId"],
+      },
+      finnrickRatings: {
+        select: {
+          grade: true,
+          averageScore: true,
+          testCount: true,
+          newestTestDate: true,
+          finnrickUrl: true,
+        },
+      },
+      vendorMapping: {
+        select: { vendorDomain: true, finnrickSlug: true },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
 
-  useEffect(() => {
-    fetch("/api/vendors")
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load vendors");
-        return r.json();
-      })
-      .then(setVendors)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+
+  return vendors.map((v) => {
+    const ratings = v.finnrickRatings;
+    const totalTests = ratings.reduce((sum, r) => sum + r.testCount, 0);
+    const latestTest =
+      ratings.length > 0
+        ? ratings.reduce((best, r) =>
+            r.newestTestDate > best.newestTestDate ? r : best
+          ).newestTestDate
+        : null;
+
+    const bestGrade =
+      ratings.length > 0
+        ? ratings.reduce((best, r) =>
+            (gradeOrder[r.grade] ?? 0) > (gradeOrder[best.grade] ?? 0) ? r : best
+          ).grade
+        : null;
+
+    const avgScore =
+      ratings.length > 0
+        ? ratings.reduce((sum, r) => sum + Number(r.averageScore), 0) / ratings.length
+        : null;
+
+    return {
+      id: v.id,
+      name: v.name,
+      slug: v.slug,
+      website: v.website,
+      peptideCount: v.prices.length,
+      finnrickRatingCount: ratings.length,
+      bestFinnrickGrade: bestGrade as FinnrickGrade | null,
+      averageFinnrickScore: avgScore !== null ? Math.round(avgScore * 10) / 10 : null,
+      totalTestCount: totalTests,
+      latestTestDate: latestTest?.toISOString() ?? null,
+      vendorDomain: v.vendorMapping?.vendorDomain ?? null,
+    };
+  });
+}
+
+export default async function VendorsPage() {
+  const vendors = await getVendors();
 
   return (
     <div className="container-page py-8">
@@ -47,132 +103,111 @@ export default function VendorsPage() {
         </p>
       </div>
 
-      {loading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="skeleton h-48 rounded-xl" />
-          ))}
-        </div>
-      )}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {vendors.map((v) => (
+          <Link
+            key={v.id}
+            href={`/vendors/${v.slug}`}
+            className="group flex flex-col rounded-xl p-5 transition-all duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+            style={{
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
+              boxShadow: "var(--card-shadow)",
+              textDecoration: "none",
+            }}
+          >
+            {/* Vendor name + grade */}
+            <div className="flex items-start justify-between gap-2">
+              <h2
+                className="font-semibold leading-snug transition-colors group-hover:text-[var(--accent)]"
+                style={{ color: "var(--foreground)" }}
+              >
+                {v.name}
+              </h2>
+              {v.bestFinnrickGrade ? (
+                <GradeBadge grade={v.bestFinnrickGrade} compact />
+              ) : (
+                <GradeBadgeEmpty />
+              )}
+            </div>
 
-      {error && (
-        <div
-          className="rounded-xl p-8 text-center"
-          style={{ border: "1px solid var(--danger-border)", background: "var(--danger-bg)" }}
-        >
-          <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>
-            {error}
-          </p>
-        </div>
-      )}
+            {v.vendorDomain && (
+              <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                {v.vendorDomain}
+              </p>
+            )}
 
-      {!loading && !error && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {vendors.map((v) => (
-            <Link
-              key={v.id}
-              href={`/vendors/${v.slug}`}
-              className="group flex flex-col rounded-xl p-5 transition-all duration-150 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
-              style={{
-                background: "var(--card-bg)",
-                border: "1px solid var(--card-border)",
-                boxShadow: "var(--card-shadow)",
-                textDecoration: "none",
-              }}
-            >
-              {/* Vendor name + grade */}
-              <div className="flex items-start justify-between gap-2">
-                <h2
-                  className="font-semibold leading-snug transition-colors group-hover:text-[var(--accent)]"
-                  style={{ color: "var(--foreground)" }}
-                >
-                  {v.name}
-                </h2>
-                {v.bestFinnrickGrade ? (
-                  <GradeBadge grade={v.bestFinnrickGrade} compact />
-                ) : (
-                  <GradeBadgeEmpty />
-                )}
+            <div className="mt-4 flex-1" />
+
+            {/* Stats grid */}
+            <dl className="mt-3 grid grid-cols-2 gap-2">
+              <div
+                className="rounded-lg p-2.5"
+                style={{ background: "var(--surface-raised)" }}
+              >
+                <dt className="text-xs" style={{ color: "var(--muted)" }}>
+                  Peptides
+                </dt>
+                <dd className="mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
+                  {v.peptideCount}
+                </dd>
               </div>
-
-              {v.vendorDomain && (
-                <p className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
-                  {v.vendorDomain}
-                </p>
-              )}
-
-              <div className="mt-4 flex-1" />
-
-              {/* Stats grid */}
-              <dl className="mt-3 grid grid-cols-2 gap-2">
+              <div
+                className="rounded-lg p-2.5"
+                style={{ background: "var(--surface-raised)" }}
+              >
+                <dt className="text-xs" style={{ color: "var(--muted)" }}>
+                  Lab tests
+                </dt>
+                <dd className="mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
+                  {v.totalTestCount}
+                </dd>
+              </div>
+              {v.averageFinnrickScore !== null && (
                 <div
                   className="rounded-lg p-2.5"
                   style={{ background: "var(--surface-raised)" }}
                 >
                   <dt className="text-xs" style={{ color: "var(--muted)" }}>
-                    Peptides
+                    Avg score
                   </dt>
                   <dd className="mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
-                    {v.peptideCount}
+                    {v.averageFinnrickScore.toFixed(1)}
                   </dd>
                 </div>
+              )}
+              {v.latestTestDate && (
                 <div
                   className="rounded-lg p-2.5"
                   style={{ background: "var(--surface-raised)" }}
                 >
                   <dt className="text-xs" style={{ color: "var(--muted)" }}>
-                    Lab tests
+                    Last tested
                   </dt>
-                  <dd className="mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
-                    {v.totalTestCount}
+                  <dd
+                    className="mt-0.5 text-sm font-semibold"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {new Date(v.latestTestDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      year: "numeric",
+                    })}
                   </dd>
                 </div>
-                {v.averageFinnrickScore !== null && (
-                  <div
-                    className="rounded-lg p-2.5"
-                    style={{ background: "var(--surface-raised)" }}
-                  >
-                    <dt className="text-xs" style={{ color: "var(--muted)" }}>
-                      Avg score
-                    </dt>
-                    <dd className="mt-0.5 font-semibold" style={{ color: "var(--foreground)" }}>
-                      {v.averageFinnrickScore.toFixed(1)}
-                    </dd>
-                  </div>
-                )}
-                {v.latestTestDate && (
-                  <div
-                    className="rounded-lg p-2.5"
-                    style={{ background: "var(--surface-raised)" }}
-                  >
-                    <dt className="text-xs" style={{ color: "var(--muted)" }}>
-                      Last tested
-                    </dt>
-                    <dd
-                      className="mt-0.5 text-sm font-semibold"
-                      style={{ color: "var(--foreground)" }}
-                    >
-                      {new Date(v.latestTestDate).toLocaleDateString("en-US", {
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-
-              {v.finnrickRatingCount === 0 && (
-                <p
-                  className="mt-3 text-xs"
-                  style={{ color: "var(--muted-light)" }}
-                >
-                  No Finnrick lab data yet
-                </p>
               )}
-            </Link>
-          ))}
-        </div>
-      )}
+            </dl>
+
+            {v.finnrickRatingCount === 0 && (
+              <p
+                className="mt-3 text-xs"
+                style={{ color: "var(--muted-light)" }}
+              >
+                No Finnrick lab data yet
+              </p>
+            )}
+          </Link>
+        ))}
+      </div>
 
       {/* Finnrick explanation */}
       <div
@@ -190,7 +225,7 @@ export default function VendorsPage() {
           >
             finnrick.com
           </a>
-          . Grades (A–E) reflect purity, quantity accuracy, and identity test results.
+          . Grades (A-E) reflect purity, quantity accuracy, and identity test results.
           Peptide Daily imports and displays this data without modification. Grades are per
           peptide; the grade shown here is the best grade across all peptides tested for
           that vendor.

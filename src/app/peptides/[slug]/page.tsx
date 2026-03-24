@@ -1,11 +1,9 @@
-"use client";
-
-import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { prisma } from "@/lib/db/prisma";
+import { computeTrustScore, bestFinnrickGrade } from "@/lib/finnrick/trust-score";
 import { PriceTable } from "@/components/peptides/price-table";
-import { ReviewList } from "@/components/reviews/review-list";
-import { ReviewForm } from "@/components/reviews/review-form";
 import { StarRating } from "@/components/ui/star-rating";
 import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
 import { TrustScoreBar } from "@/components/finnrick/trust-score-bar";
@@ -15,10 +13,193 @@ import { GradeScaleTip, TrustScoreTip } from "@/components/ui/onboarding-tip";
 import { MedicalDisclaimer } from "@/components/ui/info-banner";
 import { getPeptideGuide, getCategoryRiskThemes } from "@/lib/learn/content-service";
 import { REGULATORY_LABELS, REGULATORY_COLORS } from "@/lib/learn/peptide-data";
-import type { PeptideDetail, ReviewItem } from "@/types";
+import { ReviewSectionClient } from "@/components/reviews/review-form-client";
+import type { FinnrickRatingItem, FinnrickGrade, FinnrickTestItem, PeptideDetail } from "@/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EDUCATIONAL GUIDE PANEL — shown on each peptide price/review page
+// DATA FETCHING
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function getPeptideBySlug(slug: string): Promise<PeptideDetail | null> {
+  const peptide = await prisma.peptide.findFirst({
+    where: {
+      OR: [{ slug }, { id: slug }],
+    },
+    include: {
+      prices: {
+        include: {
+          vendor: {
+            select: { id: true, name: true, slug: true, website: true },
+          },
+        },
+        orderBy: { price: "asc" },
+      },
+      reviews: {
+        where: { flagged: false },
+        include: {
+          user: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      finnrickRatings: {
+        include: {
+          tests: {
+            orderBy: { testDate: "desc" },
+            take: 10,
+          },
+          vendor: { select: { slug: true } },
+        },
+      },
+    },
+  });
+
+  if (!peptide) return null;
+
+  const ratings = peptide.reviews.map((r) => r.rating);
+  const avgRating =
+    ratings.length > 0
+      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+      : 0;
+
+  const bestPrice = peptide.prices.length > 0 ? peptide.prices[0] : null;
+
+  // Build finnrickRatings map keyed by vendor slug
+  const finnrickRatingsMap: Record<string, FinnrickRatingItem> = {};
+  const finnrickTestsMap: Record<string, FinnrickTestItem[]> = {};
+  for (const fr of peptide.finnrickRatings) {
+    finnrickRatingsMap[fr.vendor.slug] = {
+      grade: fr.grade as FinnrickGrade,
+      averageScore: Number(fr.averageScore),
+      testCount: fr.testCount,
+      minScore: Number(fr.minScore),
+      maxScore: Number(fr.maxScore),
+      oldestTestDate: fr.oldestTestDate.toISOString(),
+      newestTestDate: fr.newestTestDate.toISOString(),
+      finnrickUrl: fr.finnrickUrl,
+    };
+    finnrickTestsMap[fr.vendor.slug] = fr.tests.map((t) => ({
+      id: t.id,
+      testDate: t.testDate.toISOString(),
+      testScore: Number(t.testScore),
+      advertisedQuantity: Number(t.advertisedQuantity),
+      actualQuantity: Number(t.actualQuantity),
+      quantityVariance: Number(t.quantityVariance),
+      purity: Number(t.purity),
+      batchId: t.batchId,
+      containerType: t.containerType,
+      labId: t.labId,
+      source: t.source,
+      endotoxinsStatus: t.endotoxinsStatus,
+      certificateLink: t.certificateLink,
+      identityResult: t.identityResult,
+    }));
+  }
+
+  // Pricing signal: median price across vendors
+  const allPrices = peptide.prices.map((pr) => Number(pr.price)).sort((a, b) => a - b);
+  const median = allPrices.length > 0 ? allPrices[Math.floor(allPrices.length / 2)] : null;
+
+  return {
+    id: peptide.id,
+    name: peptide.name,
+    slug: peptide.slug,
+    description: peptide.description,
+    category: peptide.category,
+    sequence: (peptide as Record<string, unknown>).sequence as string | undefined,
+    averageRating: Math.round(avgRating * 10) / 10,
+    reviewCount: ratings.length,
+    bestPrice: bestPrice ? Number(bestPrice.price) : null,
+    bestPriceVendor: bestPrice ? bestPrice.vendor.name : null,
+    priceCount: peptide.prices.length,
+    bestFinnrickGrade: bestFinnrickGrade(Object.values(finnrickRatingsMap)),
+    trustScore: bestPrice
+      ? computeTrustScore({
+          finnrickRating: finnrickRatingsMap[bestPrice.vendor.slug] ?? null,
+          averageReviewRating: avgRating,
+          reviewCount: ratings.length,
+          priceRelativeToMedian:
+            median && median > 0 ? Number(bestPrice.price) / median : undefined,
+        })
+      : null,
+    finnrickRatings: finnrickRatingsMap,
+    prices: peptide.prices.map((p) => {
+      const vendorFinnrick = finnrickRatingsMap[p.vendor.slug] ?? null;
+      const trustScore = computeTrustScore({
+        finnrickRating: vendorFinnrick,
+        averageReviewRating: avgRating,
+        reviewCount: ratings.length,
+        priceRelativeToMedian:
+          median && median > 0 ? Number(p.price) / median : undefined,
+      });
+      return {
+        id: p.id,
+        vendorId: p.vendor.id,
+        vendorName: p.vendor.name,
+        vendorSlug: p.vendor.slug,
+        vendorWebsite: p.vendor.website,
+        price: Number(p.price),
+        currency: p.currency,
+        concentration: p.concentration,
+        sku: p.sku,
+        productUrl: p.productUrl,
+        availabilityStatus: p.availabilityStatus,
+        lastUpdated: p.lastUpdated,
+        finnrickRating: vendorFinnrick,
+        trustScore,
+        finnrickTests: finnrickTestsMap[p.vendor.slug] ?? [],
+      };
+    }),
+    reviews: peptide.reviews.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      title: r.title,
+      body: r.body,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+      user: {
+        id: r.user.id,
+        name: r.user.name,
+        image: r.user.image,
+      },
+    })),
+  } as PeptideDetail;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// METADATA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const peptide = await getPeptideBySlug(slug);
+
+  if (!peptide) {
+    return { title: "Peptide Not Found | Peptide Daily" };
+  }
+
+  const priceSnippet =
+    peptide.bestPrice !== null
+      ? ` from $${peptide.bestPrice.toFixed(2)}`
+      : "";
+  const vendorSnippet =
+    peptide.priceCount > 0
+      ? ` across ${peptide.priceCount} vendor${peptide.priceCount !== 1 ? "s" : ""}`
+      : "";
+
+  return {
+    title: `${peptide.name} Prices, Lab Data & Reviews | Peptide Daily`,
+    description: `Compare ${peptide.name} prices${priceSnippet}${vendorSnippet}. ${peptide.reviewCount} community reviews, Finnrick lab grades, and trust scores. ${peptide.description ?? ""}`.trim(),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATIONAL GUIDE PANEL
 // ─────────────────────────────────────────────────────────────────────────────
 
 function PeptideGuidePanel({ slug }: { slug: string }) {
@@ -152,122 +333,27 @@ function PeptideGuidePanel({ slug }: { slug: string }) {
   );
 }
 
-export default function PeptideDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE COMPONENT (Server Component)
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const [peptide, setPeptide] = useState<PeptideDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [editingReview, setEditingReview] = useState<ReviewItem | null>(null);
+export default async function PeptideDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const peptide = await getPeptideBySlug(slug);
 
-  const fetchPeptide = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/peptides/${slug}`);
-      if (!res.ok) throw new Error("Failed to load peptide");
-      const data = await res.json();
-      setPeptide(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
-
-  useEffect(() => {
-    fetchPeptide();
-  }, [fetchPeptide]);
-
-  const handleReviewSubmit = async (data: {
-    rating: number;
-    title: string;
-    body: string;
-  }) => {
-    if (!peptide) return;
-    const res = await fetch(`/api/peptides/${peptide.id}/reviews`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Failed to submit review");
-    }
-    await fetchPeptide();
-  };
-
-  const handleReviewEdit = async (data: {
-    rating: number;
-    title: string;
-    body: string;
-  }) => {
-    if (!editingReview) return;
-    const res = await fetch(`/api/reviews/${editingReview.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Failed to update review");
-    }
-    setEditingReview(null);
-    await fetchPeptide();
-  };
-
-  const handleReviewDelete = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
-    const res = await fetch(`/api/reviews/${reviewId}`, { method: "DELETE" });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.message || "Failed to delete review");
-      return;
-    }
-    await fetchPeptide();
-  };
-
-  // ── Loading skeleton ────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="container-page py-8">
-        <div className="skeleton mb-2 h-4 w-32 rounded" />
-        <div className="skeleton mb-6 h-8 w-64 rounded" />
-        <div className="skeleton mb-8 h-24 w-full rounded-xl" />
-        <div className="skeleton h-64 w-full rounded-xl" />
-      </div>
-    );
-  }
-
-  // ── Error state ─────────────────────────────────────────────────────────
-  if (error || !peptide) {
-    return (
-      <div className="container-page py-12">
-        <div
-          className="rounded-xl p-8 text-center"
-          style={{ border: "1px solid var(--danger-border)", background: "var(--danger-bg)" }}
-        >
-          <p className="font-medium" style={{ color: "var(--danger)" }}>
-            {error || "Peptide not found"}
-          </p>
-          <Link
-            href="/peptides"
-            className="mt-4 inline-block text-sm font-medium hover:underline"
-            style={{ color: "var(--accent)" }}
-          >
-            ← Back to catalog
-          </Link>
-        </div>
-      </div>
-    );
+  if (!peptide) {
+    notFound();
   }
 
   // Build finnrick tests map keyed by vendor slug
-  const finnrickTests: Record<string, import("@/types").FinnrickTestItem[]> = {};
+  const finnrickTests: Record<string, FinnrickTestItem[]> = {};
   if (peptide.prices) {
     for (const price of peptide.prices) {
-      // Tests are embedded in price items via the [id] API
-      const rat = (price as unknown as { finnrickTests?: import("@/types").FinnrickTestItem[] }).finnrickTests;
+      const rat = (price as unknown as { finnrickTests?: FinnrickTestItem[] }).finnrickTests;
       if (rat) finnrickTests[price.vendorSlug] = rat;
     }
   }
@@ -295,7 +381,7 @@ export default function PeptideDetailPage() {
         Catalog
       </Link>
 
-      {/* ── Hero section ──────────────────────────────────────────────── */}
+      {/* Hero section */}
       <div
         className="mb-6 rounded-xl p-6 sm:p-8"
         style={{
@@ -362,7 +448,7 @@ export default function PeptideDetailPage() {
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/60">Best lab grade:</span>
             {topGrade ? (
-              <GradeBadge grade={topGrade as import("@/types").FinnrickGrade} compact />
+              <GradeBadge grade={topGrade as FinnrickGrade} compact />
             ) : (
               <GradeBadgeEmpty />
             )}
@@ -385,7 +471,7 @@ export default function PeptideDetailPage() {
         </div>
       </div>
 
-      {/* ── Vendor comparison ─────────────────────────────────────────── */}
+      {/* Vendor comparison */}
       <section className="mb-8">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
@@ -409,7 +495,7 @@ export default function PeptideDetailPage() {
           </div>
         </div>
 
-        {/* Grade scale tip — shown once, then dismissed */}
+        {/* Grade scale tip */}
         <GradeScaleTip className="mb-4" />
 
         <PriceTable
@@ -419,63 +505,17 @@ export default function PeptideDetailPage() {
         />
       </section>
 
-      {/* ── Educational guide panel ───────────────────────────────────── */}
+      {/* Educational guide panel */}
       <PeptideGuidePanel slug={slug} />
 
-      {/* ── Trust score explainer ────────────────────────────────────── */}
+      {/* Trust score explainer */}
       {peptide.trustScore && <TrustScoreTip className="mb-8" />}
 
-      {/* ── Data transparency note ──────────────────────────────────── */}
+      {/* Data transparency note */}
       <MedicalDisclaimer className="mb-8" />
 
-      {/* ── Reviews ───────────────────────────────────────────────────── */}
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold" style={{ color: "var(--foreground)" }}>
-          Community Reviews
-        </h2>
-        <ReviewList
-          reviews={peptide.reviews}
-          onEdit={setEditingReview}
-          onDelete={handleReviewDelete}
-        />
-      </section>
-
-      {/* ── Review form ───────────────────────────────────────────────── */}
-      <section
-        className="rounded-xl p-6"
-        style={{
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          boxShadow: "var(--card-shadow)",
-        }}
-      >
-        <h2 className="mb-4 text-lg font-bold" style={{ color: "var(--foreground)" }}>
-          {editingReview ? "Edit your review" : "Leave a review"}
-        </h2>
-        {editingReview ? (
-          <div>
-            <ReviewForm
-              peptideId={peptide.id}
-              onSubmit={handleReviewEdit}
-              initialValues={{
-                rating: editingReview.rating,
-                title: editingReview.title,
-                body: editingReview.body,
-              }}
-              isEditing
-            />
-            <button
-              onClick={() => setEditingReview(null)}
-              className="mt-3 text-sm transition hover:opacity-70"
-              style={{ color: "var(--muted)" }}
-            >
-              Cancel editing
-            </button>
-          </div>
-        ) : (
-          <ReviewForm peptideId={peptide.id} onSubmit={handleReviewSubmit} />
-        )}
-      </section>
+      {/* Reviews (client component for interactivity) */}
+      <ReviewSectionClient peptideId={peptide.id} reviews={peptide.reviews} />
     </div>
   );
 }

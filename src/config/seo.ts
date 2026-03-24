@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const SITE_NAME = "Peptide Daily";
-const SITE_URL = "https://peptidedaily.com";
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://peptidedaily.com";
 
 // ── Per-route SEO configuration ─────────────────────────────────────────────
 

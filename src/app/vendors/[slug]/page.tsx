@@ -1,8 +1,6 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
+import { prisma } from "@/lib/db/prisma";
 import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
 import { AvailabilityBadge } from "@/components/ui/badge";
 import { TestResultsTable } from "@/components/finnrick/test-results-table";
@@ -10,7 +8,12 @@ import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
 import { MedicalDisclaimer } from "@/components/ui/info-banner";
 import { DataFreshnessBar } from "@/components/ui/data-freshness";
 import { getPeptideGuide } from "@/lib/learn/content-service";
+import type { Metadata } from "next";
 import type { FinnrickGrade, FinnrickTestItem } from "@/types";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA FETCHING
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface FinnrickRatingSummary {
   peptideName: string;
@@ -51,14 +54,146 @@ interface VendorDetail {
   prices: VendorPriceSummary[];
 }
 
+async function getVendor(slug: string): Promise<VendorDetail | null> {
+  const vendor = await prisma.vendor.findUnique({
+    where: { slug },
+    include: {
+      prices: {
+        include: {
+          peptide: { select: { id: true, name: true, slug: true, category: true } },
+        },
+        orderBy: { price: "asc" },
+      },
+      finnrickRatings: {
+        include: {
+          peptide: { select: { name: true, slug: true } },
+          tests: {
+            orderBy: { testDate: "desc" },
+            take: 10,
+          },
+        },
+        orderBy: { averageScore: "desc" },
+      },
+      vendorMapping: {
+        select: { vendorDomain: true, finnrickSlug: true, notes: true },
+      },
+    },
+  });
+
+  if (!vendor) return null;
+
+  const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+  const ratings = vendor.finnrickRatings;
+
+  const bestGrade =
+    ratings.length > 0
+      ? ratings.reduce((best, r) =>
+          (gradeOrder[r.grade] ?? 0) > (gradeOrder[best.grade] ?? 0) ? r : best
+        ).grade
+      : null;
+
+  const totalTests = ratings.reduce((sum, r) => sum + r.testCount, 0);
+  const latestTest =
+    ratings.length > 0
+      ? ratings.reduce((best, r) =>
+          r.newestTestDate > best.newestTestDate ? r : best
+        ).newestTestDate
+      : null;
+  const avgScore =
+    ratings.length > 0
+      ? ratings.reduce((s, r) => s + Number(r.averageScore), 0) / ratings.length
+      : null;
+
+  return {
+    id: vendor.id,
+    name: vendor.name,
+    slug: vendor.slug,
+    website: vendor.website,
+    vendorDomain: vendor.vendorMapping?.vendorDomain ?? null,
+    bestFinnrickGrade: bestGrade as FinnrickGrade | null,
+    averageFinnrickScore: avgScore !== null ? Math.round(avgScore * 10) / 10 : null,
+    totalTestCount: totalTests,
+    latestTestDate: latestTest?.toISOString() ?? null,
+    finnrickRatingCount: ratings.length,
+
+    finnrickRatings: ratings.map((r) => ({
+      peptideName: r.peptide.name,
+      peptideSlug: r.peptide.slug,
+      grade: r.grade as FinnrickGrade,
+      averageScore: Number(r.averageScore),
+      testCount: r.testCount,
+      newestTestDate: r.newestTestDate.toISOString(),
+      finnrickUrl: r.finnrickUrl,
+      tests: r.tests.map((t) => ({
+        id: t.id,
+        testDate: t.testDate.toISOString(),
+        testScore: Number(t.testScore),
+        purity: Number(t.purity),
+        quantityVariance: Number(t.quantityVariance),
+        advertisedQuantity: Number(t.advertisedQuantity),
+        actualQuantity: Number(t.actualQuantity),
+        batchId: t.batchId,
+        containerType: t.containerType,
+        labId: t.labId,
+        source: t.source,
+        endotoxinsStatus: t.endotoxinsStatus,
+        certificateLink: t.certificateLink,
+        identityResult: t.identityResult,
+      })),
+    })),
+
+    prices: vendor.prices.map((p) => ({
+      id: p.id,
+      peptideName: p.peptide.name,
+      peptideSlug: p.peptide.slug,
+      peptideCategory: p.peptide.category,
+      price: Number(p.price),
+      currency: p.currency,
+      concentration: p.concentration,
+      productUrl: p.productUrl,
+      availabilityStatus: p.availabilityStatus,
+      lastUpdated: p.lastUpdated.toISOString(),
+    })),
+  };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// EDUCATIONAL GUIDE REMINDER — shown at bottom of each vendor page
+// METADATA
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const vendor = await getVendor(slug);
+
+  if (!vendor) {
+    return { title: "Vendor Not Found | Peptide Daily" };
+  }
+
+  const gradeText = vendor.bestFinnrickGrade
+    ? `Best Finnrick grade: ${vendor.bestFinnrickGrade}. `
+    : "";
+  const testText =
+    vendor.totalTestCount > 0
+      ? `${vendor.totalTestCount} independent lab tests across ${vendor.finnrickRatingCount} peptides. `
+      : "";
+
+  return {
+    title: `${vendor.name} — Peptide Vendor Review & Lab Testing | Peptide Daily`,
+    description: `Independent review of ${vendor.name} with third-party Finnrick lab testing data. ${gradeText}${testText}${vendor.prices.length} peptides listed with current pricing and availability.`,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EDUCATIONAL GUIDE REMINDER -- shown at bottom of each vendor page
 // ─────────────────────────────────────────────────────────────────────────────
 
 function VendorGuideReminder({ peptideSlugs }: { peptideSlugs: string[] }) {
-  // Find guides that exist for any peptide this vendor carries
   const guides = peptideSlugs
-    .slice(0, 6) // show up to 6 links
+    .slice(0, 6)
     .map((slug) => getPeptideGuide(slug))
     .filter(Boolean) as NonNullable<ReturnType<typeof getPeptideGuide>>[];
 
@@ -125,51 +260,20 @@ function VendorGuideReminder({ peptideSlugs }: { peptideSlugs: string[] }) {
   );
 }
 
-export default function VendorDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+// ─────────────────────────────────────────────────────────────────────────────
+// PAGE COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const [vendor, setVendor] = useState<VendorDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function VendorDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const vendor = await getVendor(slug);
 
-  useEffect(() => {
-    fetch(`/api/vendors/${slug}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Vendor not found");
-        return r.json();
-      })
-      .then(setVendor)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="container-page py-8">
-        <div className="skeleton mb-6 h-8 w-48 rounded" />
-        <div className="skeleton mb-4 h-32 w-full rounded-xl" />
-        <div className="skeleton h-64 w-full rounded-xl" />
-      </div>
-    );
-  }
-
-  if (error || !vendor) {
-    return (
-      <div className="container-page py-12">
-        <div
-          className="rounded-xl p-8 text-center"
-          style={{ border: "1px solid var(--danger-border)", background: "var(--danger-bg)" }}
-        >
-          <p className="font-medium" style={{ color: "var(--danger)" }}>
-            {error || "Vendor not found"}
-          </p>
-          <Link href="/vendors" className="mt-4 inline-block text-sm" style={{ color: "var(--accent)" }}>
-            ← Back to vendors
-          </Link>
-        </div>
-      </div>
-    );
+  if (!vendor) {
+    notFound();
   }
 
   return (
@@ -186,7 +290,7 @@ export default function VendorDetailPage() {
         All Vendors
       </Link>
 
-      {/* ── Vendor hero ──────────────────────────────────────────────── */}
+      {/* -- Vendor hero --------------------------------------------------- */}
       <div
         className="mb-6 rounded-2xl p-6 sm:p-8"
         style={{ background: "linear-gradient(135deg, var(--brand-navy) 0%, #164e63 100%)" }}
@@ -252,7 +356,7 @@ export default function VendorDetailPage() {
         </dl>
       </div>
 
-      {/* ── Finnrick lab data ─────────────────────────────────────────── */}
+      {/* -- Finnrick lab data --------------------------------------------- */}
       {vendor.finnrickRatings.length > 0 && (
         <section className="mb-8">
           <div className="mb-4 flex items-baseline justify-between">
@@ -355,7 +459,7 @@ export default function VendorDetailPage() {
         </div>
       )}
 
-      {/* ── Peptides offered ─────────────────────────────────────────── */}
+      {/* -- Peptides offered ---------------------------------------------- */}
       <section>
         <h2 className="mb-4 text-xl font-bold" style={{ color: "var(--foreground)" }}>
           Peptides Offered
@@ -452,13 +556,13 @@ export default function VendorDetailPage() {
         {vendor.latestTestDate && (
           <DataFreshnessBar
             lastUpdated={vendor.latestTestDate}
-            refreshIntervalMinutes={60 * 24 * 7} // Finnrick data refreshes weekly
+            refreshIntervalMinutes={60 * 24 * 7}
             label="Lab data"
           />
         )}
       </div>
 
-      {/* ── Educational guide reminder ────────────────────────────────── */}
+      {/* -- Educational guide reminder ------------------------------------ */}
       <VendorGuideReminder peptideSlugs={vendor.prices.map((p) => p.peptideSlug)} />
 
       {/* Medical disclaimer */}
