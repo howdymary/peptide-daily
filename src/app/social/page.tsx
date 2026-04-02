@@ -733,7 +733,7 @@ export default function SocialContentPage() {
               }}
             >
               <p style={{ fontSize: 21, margin: 0, color: NAVY, lineHeight: 1.5 }}>
-                <strong>Pro tip:</strong> Check Peptide Daily's vendor ratings
+                <strong>Pro tip:</strong> Check Peptide Daily&apos;s vendor ratings
                 for Finnrick lab-verified scores before purchasing.
               </p>
             </div>

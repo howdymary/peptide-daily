@@ -288,7 +288,7 @@ export default function VendorHealthPage() {
 
       <p className="text-xs" style={{ color: "var(--muted)" }}>
         Health metrics update automatically after each scraping cycle (every 15 min by default).
-        "Stale" = not scraped in the last 7 days.
+        &quot;Stale&quot; = not scraped in the last 7 days.
       </p>
     </div>
   );

@@ -20,6 +20,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { formatRelativeTime } from "@/lib/presentation";
 
 type BannerVariant = "info" | "success" | "warning" | "error";
 
@@ -163,22 +164,9 @@ export function DataFreshnessNotice({
 }) {
   if (!lastUpdated) return null;
 
-  const date = new Date(lastUpdated);
-  const ageMs = Date.now() - date.getTime();
-  const ageMins = Math.floor(ageMs / 60_000);
-  const ageHours = Math.floor(ageMs / 3_600_000);
-  const ageLabel =
-    ageMins < 2
-      ? "just now"
-      : ageMins < 60
-        ? `${ageMins} min ago`
-        : ageHours < 24
-          ? `${ageHours}h ago`
-          : date.toLocaleDateString();
-
   return (
     <InfoBanner variant="info" className={className}>
-      Price data last updated <strong>{ageLabel}</strong>. Prices refresh
+      Price data last updated <strong>{formatRelativeTime(lastUpdated)}</strong>. Prices refresh
       automatically every 15 minutes.
     </InfoBanner>
   );

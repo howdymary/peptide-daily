@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { cn } from "@/lib/cn";
 
 type Variant = "inline" | "card";
 
@@ -55,47 +56,39 @@ export function NewsletterSignup({
       <div
         className={
           variant === "card"
-            ? "rounded-xl border p-6 text-center"
-            : "flex items-center gap-3"
+            ? "rounded-[1.5rem] border p-6 text-center"
+            : "flex items-center gap-3 rounded-[1.25rem] border px-4 py-3"
         }
         style={{
-          ...(variant === "card" && !dark
-            ? {
-                borderColor: "var(--card-border)",
-                background: "var(--card-bg)",
-                boxShadow: "var(--card-shadow)",
-              }
-            : {}),
-          ...(variant === "card" && dark
-            ? {
-                borderColor: "rgb(255 255 255 / 0.1)",
-                background: "rgb(255 255 255 / 0.05)",
-              }
-            : {}),
+          borderColor: dark ? "rgba(255,255,255,0.14)" : "var(--accent-border)",
+          background: dark ? "rgba(255,255,255,0.06)" : "var(--accent-subtle)",
         }}
       >
         <p
           className="text-sm font-semibold"
-          style={{ color: dark ? "#5EEAD4" : "#0D6E6E" }}
+          style={{ color: dark ? "white" : "var(--accent-primary)" }}
         >
-          You're in. Check your inbox.
+          You&apos;re in. Check your inbox.
         </p>
       </div>
     );
   }
 
-  const headlineColor = dark ? "#ffffff" : "#1B2A4A";
-  const subtextColor = dark ? "rgb(255 255 255 / 0.55)" : "var(--muted)";
-  const inputBg = dark ? "rgb(255 255 255 / 0.08)" : "var(--surface)";
-  const inputBorder = dark ? "rgb(255 255 255 / 0.12)" : "var(--border)";
-  const inputText = dark ? "#ffffff" : "var(--foreground)";
-  const placeholderClass = dark ? "placeholder:text-white/40" : "placeholder:text-gray-400";
+  const headlineColor = dark ? "#ffffff" : "var(--text-primary)";
+  const subtextColor = dark ? "rgba(255,255,255,0.62)" : "var(--text-secondary)";
+  const inputBg = dark ? "rgba(255, 255, 255, 0.06)" : "var(--bg-secondary)";
+  const inputBorder = dark ? "rgba(255,255,255,0.14)" : "var(--border-default)";
+  const inputText = dark ? "#ffffff" : "var(--text-primary)";
+  const placeholderClass = dark ? "placeholder:text-white/35" : "placeholder:text-[var(--text-tertiary)]";
 
   // ── Inline variant (horizontal — for hero/footer) ──────────────────────────
   if (variant === "inline") {
     return (
       <div>
-        <p className="mb-2 text-sm font-semibold" style={{ color: headlineColor }}>
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: dark ? "rgba(255,255,255,0.72)" : "var(--text-tertiary)" }}>
+          Weekly update
+        </p>
+        <p className="mb-3 text-base font-medium" style={{ color: headlineColor }}>
           Get weekly peptide price intel
         </p>
         <form onSubmit={handleSubmit} className="flex gap-2">
@@ -109,7 +102,10 @@ export function NewsletterSignup({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className={`flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${placeholderClass}`}
+            className={cn(
+              "flex-1 rounded-full border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(22,163,74,0.14)]",
+              placeholderClass,
+            )}
             style={{
               background: inputBg,
               borderColor: inputBorder,
@@ -120,8 +116,8 @@ export function NewsletterSignup({
           <button
             type="submit"
             disabled={status === "loading"}
-            className="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
-            style={{ background: "#0D6E6E", color: "#ffffff" }}
+            className="shrink-0 rounded-full px-5 py-3 text-sm font-semibold transition-colors disabled:opacity-60"
+            style={{ background: "var(--accent-primary)", color: "#ffffff" }}
           >
             {status === "loading" ? "..." : "Subscribe"}
           </button>
@@ -138,7 +134,7 @@ export function NewsletterSignup({
             </button>
           </p>
         )}
-        <p className="mt-1.5 text-xs" style={{ color: subtextColor }}>
+        <p className="mt-2 text-xs" style={{ color: subtextColor }}>
           No spam, unsubscribe anytime.
         </p>
       </div>
@@ -148,26 +144,24 @@ export function NewsletterSignup({
   // ── Card variant (vertical — for sidebar/standalone) ───────────────────────
   return (
     <div
-      className="rounded-xl border p-6"
+      className="rounded-[1.5rem] border p-6"
       style={{
         ...(dark
           ? {
-              borderColor: "rgb(255 255 255 / 0.1)",
-              background: "rgb(255 255 255 / 0.05)",
+              borderColor: "rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.05)",
             }
           : {
-              borderColor: "var(--card-border)",
-              background: "var(--card-bg)",
-              boxShadow: "var(--card-shadow)",
-              borderTopColor: "#0D6E6E",
-              borderTopWidth: "3px",
+              borderColor: "var(--border-default)",
+              background: "var(--bg-secondary)",
+              boxShadow: "0 18px 48px -38px rgba(28,25,23,0.22)",
             }),
       }}
     >
-      <h3
-        className="text-base font-semibold"
-        style={{ color: headlineColor }}
-      >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+        Newsletter
+      </p>
+      <h3 className="mt-2 text-xl font-medium" style={{ color: headlineColor }}>
         Get weekly peptide price intel
       </h3>
       <p className="mt-1.5 text-sm leading-relaxed" style={{ color: subtextColor }}>
@@ -186,7 +180,10 @@ export function NewsletterSignup({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/40 ${placeholderClass}`}
+            className={cn(
+              "w-full rounded-full border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(22,163,74,0.14)]",
+              placeholderClass,
+            )}
             style={{
               background: inputBg,
               borderColor: inputBorder,
@@ -198,8 +195,8 @@ export function NewsletterSignup({
         <button
           type="submit"
           disabled={status === "loading"}
-          className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
-          style={{ background: "#0D6E6E", color: "#ffffff" }}
+          className="w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors disabled:opacity-60"
+          style={{ background: "var(--accent-primary)", color: "#ffffff" }}
         >
           {status === "loading" ? "Subscribing..." : "Subscribe"}
         </button>

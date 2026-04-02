@@ -12,7 +12,7 @@
 
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 interface OnboardingTipProps {
   /** Unique ID used as localStorage key — change it to re-show the tip */
@@ -34,21 +34,24 @@ export function OnboardingTip({
   className = "",
 }: OnboardingTipProps) {
   const storageKey = `${STORAGE_KEY_PREFIX}${id}`;
-  // Start hidden to avoid SSR mismatch; reveal after hydration
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
-    if (persistent) {
-      setVisible(true);
-      return;
-    }
-    try {
-      const dismissed = localStorage.getItem(storageKey) === "1";
-      if (!dismissed) setVisible(true);
-    } catch {
-      setVisible(true); // if localStorage throws (private mode), always show
-    }
+    const timer = window.setTimeout(() => {
+      if (persistent) {
+        setVisible(true);
+        return;
+      }
+
+      try {
+        setVisible(localStorage.getItem(storageKey) !== "1");
+      } catch {
+        setVisible(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [storageKey, persistent]);
 
   function dismiss() {

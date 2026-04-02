@@ -1,26 +1,19 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db/prisma";
 import { computeTrustScore, bestFinnrickGrade } from "@/lib/finnrick/trust-score";
-import { PriceTable } from "@/components/peptides/price-table";
-import { StarRating } from "@/components/ui/star-rating";
-import { GradeBadge, GradeBadgeEmpty } from "@/components/finnrick/grade-badge";
-import { TrustScoreBar } from "@/components/finnrick/trust-score-bar";
-import { Badge } from "@/components/ui/badge";
-import { TrustBadge, deriveTrustBadge } from "@/components/ui/trust-badge";
-import { GradeScaleTip, TrustScoreTip } from "@/components/ui/onboarding-tip";
-import { MedicalDisclaimer } from "@/components/ui/info-banner";
-import { getPeptideGuide, getCategoryRiskThemes } from "@/lib/learn/content-service";
-import { REGULATORY_LABELS, REGULATORY_COLORS } from "@/lib/learn/peptide-data";
-import { ReviewSectionClient } from "@/components/reviews/review-form-client";
-import type { FinnrickRatingItem, FinnrickGrade, FinnrickTestItem, PeptideDetail } from "@/types";
+import { getPeptideGuide } from "@/lib/learn/content-service";
+import { PeptideDetailHeader } from "@/components/peptides/peptide-detail-header";
+import { VendorPriceRow } from "@/components/peptides/vendor-price-row";
+import { PurityDistribution } from "@/components/peptides/purity-distribution";
+import { PriceHistoryChart } from "@/components/peptides/price-history-chart";
+import { ArticleCard } from "@/components/primitives/article-card";
+import { DataSourceTag } from "@/components/primitives/data-source-tag";
+import { MedicalDisclaimer } from "@/components/primitives/medical-disclaimer";
+import type { FinnrickGrade } from "@/types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DATA FETCHING
-// ─────────────────────────────────────────────────────────────────────────────
-
-async function getPeptideBySlug(slug: string): Promise<PeptideDetail | null> {
+async function getPeptideDetail(slug: string) {
   const peptide = await prisma.peptide.findFirst({
     where: {
       OR: [{ slug }, { id: slug }],
@@ -29,7 +22,11 @@ async function getPeptideBySlug(slug: string): Promise<PeptideDetail | null> {
       prices: {
         include: {
           vendor: {
-            select: { id: true, name: true, slug: true, website: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
           },
         },
         orderBy: { price: "asc" },
@@ -38,18 +35,26 @@ async function getPeptideBySlug(slug: string): Promise<PeptideDetail | null> {
         where: { flagged: false },
         include: {
           user: {
-            select: { id: true, name: true, image: true },
+            select: {
+              name: true,
+            },
           },
         },
         orderBy: { createdAt: "desc" },
+        take: 6,
       },
       finnrickRatings: {
         include: {
+          vendor: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
           tests: {
             orderBy: { testDate: "desc" },
-            take: 10,
+            take: 6,
           },
-          vendor: { select: { slug: true } },
         },
       },
     },
@@ -57,119 +62,124 @@ async function getPeptideBySlug(slug: string): Promise<PeptideDetail | null> {
 
   if (!peptide) return null;
 
-  const ratings = peptide.reviews.map((r) => r.rating);
-  const avgRating =
-    ratings.length > 0
-      ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+  const relatedNews = await prisma.newsArticle.findMany({
+    where: {
+      isHidden: false,
+      OR: [
+        { tags: { has: peptide.name } },
+        { title: { contains: peptide.name, mode: "insensitive" } },
+        { excerpt: { contains: peptide.name, mode: "insensitive" } },
+      ],
+    },
+    include: {
+      source: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ isEditorsPick: "desc" }, { publishedAt: "desc" }],
+    take: 3,
+  });
+
+  const averageReviewRating =
+    peptide.reviews.length > 0
+      ? peptide.reviews.reduce((sum, review) => sum + review.rating, 0) / peptide.reviews.length
       : 0;
+  const numericPrices = peptide.prices.map((price) => Number(price.price)).sort((a, b) => a - b);
+  const medianPrice =
+    numericPrices.length > 0 ? numericPrices[Math.floor(numericPrices.length / 2)] : null;
+  const bestPrice = peptide.prices[0] ?? null;
 
-  const bestPrice = peptide.prices.length > 0 ? peptide.prices[0] : null;
+  const ratings = peptide.finnrickRatings.map((rating) => ({
+    vendorSlug: rating.vendor.slug,
+    vendorName: rating.vendor.name,
+    grade: rating.grade as FinnrickGrade,
+    averageScore: Number(rating.averageScore),
+    testCount: rating.testCount,
+    minScore: Number(rating.minScore),
+    maxScore: Number(rating.maxScore),
+    oldestTestDate: rating.oldestTestDate.toISOString(),
+    newestTestDate: rating.newestTestDate.toISOString(),
+    finnrickUrl: rating.finnrickUrl,
+    tests: rating.tests.map((test) => ({
+      id: test.id,
+      testDate: test.testDate.toISOString(),
+      purity: Number(test.purity),
+      quantityVariance: Number(test.quantityVariance),
+      identityResult: test.identityResult,
+      vendorName: rating.vendor.name,
+    })),
+  }));
 
-  // Build finnrickRatings map keyed by vendor slug
-  const finnrickRatingsMap: Record<string, FinnrickRatingItem> = {};
-  const finnrickTestsMap: Record<string, FinnrickTestItem[]> = {};
-  for (const fr of peptide.finnrickRatings) {
-    finnrickRatingsMap[fr.vendor.slug] = {
-      grade: fr.grade as FinnrickGrade,
-      averageScore: Number(fr.averageScore),
-      testCount: fr.testCount,
-      minScore: Number(fr.minScore),
-      maxScore: Number(fr.maxScore),
-      oldestTestDate: fr.oldestTestDate.toISOString(),
-      newestTestDate: fr.newestTestDate.toISOString(),
-      finnrickUrl: fr.finnrickUrl,
-    };
-    finnrickTestsMap[fr.vendor.slug] = fr.tests.map((t) => ({
-      id: t.id,
-      testDate: t.testDate.toISOString(),
-      testScore: Number(t.testScore),
-      advertisedQuantity: Number(t.advertisedQuantity),
-      actualQuantity: Number(t.actualQuantity),
-      quantityVariance: Number(t.quantityVariance),
-      purity: Number(t.purity),
-      batchId: t.batchId,
-      containerType: t.containerType,
-      labId: t.labId,
-      source: t.source,
-      endotoxinsStatus: t.endotoxinsStatus,
-      certificateLink: t.certificateLink,
-      identityResult: t.identityResult,
-    }));
-  }
-
-  // Pricing signal: median price across vendors
-  const allPrices = peptide.prices.map((pr) => Number(pr.price)).sort((a, b) => a - b);
-  const median = allPrices.length > 0 ? allPrices[Math.floor(allPrices.length / 2)] : null;
+  const bestGrade = bestFinnrickGrade(ratings);
+  const bestVendorRating =
+    bestPrice ? ratings.find((rating) => rating.vendorSlug === bestPrice.vendor.slug) ?? null : null;
+  const bestTrust = bestPrice
+    ? computeTrustScore({
+        finnrickRating: bestVendorRating
+          ? {
+              grade: bestVendorRating.grade,
+              averageScore: bestVendorRating.averageScore,
+              testCount: bestVendorRating.testCount,
+              minScore: bestVendorRating.minScore,
+              maxScore: bestVendorRating.maxScore,
+              oldestTestDate: bestVendorRating.oldestTestDate,
+              newestTestDate: bestVendorRating.newestTestDate,
+              finnrickUrl: bestVendorRating.finnrickUrl,
+            }
+          : null,
+        averageReviewRating,
+        reviewCount: peptide.reviews.length,
+        priceRelativeToMedian:
+          bestPrice && medianPrice ? Number(bestPrice.price) / medianPrice : undefined,
+      })
+    : null;
 
   return {
-    id: peptide.id,
     name: peptide.name,
     slug: peptide.slug,
     description: peptide.description,
     category: peptide.category,
-    sequence: (peptide as Record<string, unknown>).sequence as string | undefined,
-    averageRating: Math.round(avgRating * 10) / 10,
-    reviewCount: ratings.length,
+    bestGrade,
     bestPrice: bestPrice ? Number(bestPrice.price) : null,
-    bestPriceVendor: bestPrice ? bestPrice.vendor.name : null,
-    priceCount: peptide.prices.length,
-    bestFinnrickGrade: bestFinnrickGrade(Object.values(finnrickRatingsMap)),
-    trustScore: bestPrice
-      ? computeTrustScore({
-          finnrickRating: finnrickRatingsMap[bestPrice.vendor.slug] ?? null,
-          averageReviewRating: avgRating,
-          reviewCount: ratings.length,
-          priceRelativeToMedian:
-            median && median > 0 ? Number(bestPrice.price) / median : undefined,
-        })
-      : null,
-    finnrickRatings: finnrickRatingsMap,
-    prices: peptide.prices.map((p) => {
-      const vendorFinnrick = finnrickRatingsMap[p.vendor.slug] ?? null;
-      const trustScore = computeTrustScore({
-        finnrickRating: vendorFinnrick,
-        averageReviewRating: avgRating,
-        reviewCount: ratings.length,
-        priceRelativeToMedian:
-          median && median > 0 ? Number(p.price) / median : undefined,
-      });
-      return {
-        id: p.id,
-        vendorId: p.vendor.id,
-        vendorName: p.vendor.name,
-        vendorSlug: p.vendor.slug,
-        vendorWebsite: p.vendor.website,
-        price: Number(p.price),
-        currency: p.currency,
-        concentration: p.concentration,
-        sku: p.sku,
-        productUrl: p.productUrl,
-        availabilityStatus: p.availabilityStatus,
-        lastUpdated: p.lastUpdated,
-        finnrickRating: vendorFinnrick,
-        trustScore,
-        finnrickTests: finnrickTestsMap[p.vendor.slug] ?? [],
-      };
-    }),
-    reviews: peptide.reviews.map((r) => ({
-      id: r.id,
-      rating: r.rating,
-      title: r.title,
-      body: r.body,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-      user: {
-        id: r.user.id,
-        name: r.user.name,
-        image: r.user.image,
-      },
+    bestPriceVendor: bestPrice?.vendor.name ?? null,
+    trustScore: bestTrust?.overall ?? null,
+    priceRows: peptide.prices.map((price) => ({
+      id: price.id,
+      vendorName: price.vendor.name,
+      vendorSlug: price.vendor.slug,
+      price: Number(price.price),
+      currency: price.currency,
+      concentration: price.concentration,
+      grade:
+        ratings.find((rating) => rating.vendorSlug === price.vendor.slug)?.grade ?? null,
+      lastUpdated: price.lastUpdated,
+      productUrl: price.productUrl,
     })),
-  } as PeptideDetail;
+    relatedNews: relatedNews.map((article) => ({
+      id: article.id,
+      title: article.title,
+      sourceUrl: article.sourceUrl,
+      summary: article.excerpt,
+      category: article.tags[0] ?? "Research",
+      date: article.publishedAt,
+      source: article.source.name,
+      tags: article.tags,
+      featuredLabel: article.isEditorsPick ? "Editor's pick" : null,
+    })),
+    purityEntries: ratings.flatMap((rating) => rating.tests),
+    labCards: ratings,
+    reviews: peptide.reviews.map((review) => ({
+      id: review.id,
+      rating: review.rating,
+      title: review.title,
+      body: review.body,
+      author: review.user.name ?? "Anonymous",
+      createdAt: review.createdAt,
+    })),
+  };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// METADATA
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function generateMetadata({
   params,
@@ -177,165 +187,17 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const peptide = await getPeptideBySlug(slug);
+  const peptide = await getPeptideDetail(slug);
 
   if (!peptide) {
-    return { title: "Peptide Not Found | Peptide Daily" };
+    return { title: "Peptide not found | Peptide Daily" };
   }
 
-  const priceSnippet =
-    peptide.bestPrice !== null
-      ? ` from $${peptide.bestPrice.toFixed(2)}`
-      : "";
-  const vendorSnippet =
-    peptide.priceCount > 0
-      ? ` across ${peptide.priceCount} vendor${peptide.priceCount !== 1 ? "s" : ""}`
-      : "";
-
   return {
-    title: `${peptide.name} Prices, Lab Data & Reviews | Peptide Daily`,
-    description: `Compare ${peptide.name} prices${priceSnippet}${vendorSnippet}. ${peptide.reviewCount} community reviews, Finnrick lab grades, and trust scores. ${peptide.description ?? ""}`.trim(),
+    title: `${peptide.name} prices, lab grades, and research context`,
+    description: `Compare ${peptide.name} pricing, see Finnrick lab data, and read related research context in a cleaner clinical-authority layout.`,
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// EDUCATIONAL GUIDE PANEL
-// ─────────────────────────────────────────────────────────────────────────────
-
-function PeptideGuidePanel({ slug }: { slug: string }) {
-  const guide = getPeptideGuide(slug);
-  if (!guide) return null;
-
-  const regColor = REGULATORY_COLORS[guide.regulatoryStatus];
-  const risks = getCategoryRiskThemes(guide.category);
-
-  return (
-    <section
-      className="mb-8 rounded-2xl border overflow-hidden"
-      style={{
-        borderColor: "var(--card-border)",
-        background: "var(--surface)",
-        boxShadow: "var(--card-shadow)",
-      }}
-    >
-      {/* Header */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4"
-        style={{ borderColor: "var(--border)", background: "var(--surface-raised)" }}
-      >
-        <div className="flex items-center gap-3">
-          <div>
-            <p
-              className="text-xs font-bold uppercase tracking-wider"
-              style={{ color: "var(--brand-gold)" }}
-            >
-              What is this peptide?
-            </p>
-            <p className="text-base font-bold" style={{ color: "var(--foreground)" }}>
-              {guide.name}
-            </p>
-          </div>
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            style={{
-              background: regColor.bg,
-              color: regColor.text,
-              border: `1px solid ${regColor.border}`,
-            }}
-          >
-            {REGULATORY_LABELS[guide.regulatoryStatus]}
-          </span>
-        </div>
-        <Link
-          href={`/learn/${guide.slug}`}
-          className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-[var(--surface-raised)]"
-          style={{
-            borderColor: "var(--border)",
-            color: "var(--accent)",
-          }}
-        >
-          Full research explainer →
-        </Link>
-      </div>
-
-      {/* Body */}
-      <div className="grid gap-0 sm:grid-cols-2">
-        {/* Overview */}
-        <div className="p-6 border-b sm:border-b-0 sm:border-r" style={{ borderColor: "var(--border)" }}>
-          <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-            Overview
-          </h3>
-          <p className="text-sm leading-relaxed" style={{ color: "var(--foreground-secondary)" }}>
-            {guide.shortSummary}
-          </p>
-          <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--foreground-secondary)" }}>
-            {guide.overview[0]}
-          </p>
-          <div className="mt-4">
-            <p
-              className="mb-0.5 text-xs font-semibold uppercase tracking-wide"
-              style={{ color: "var(--muted)" }}
-            >
-              Regulatory note
-            </p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-              {guide.statusNote}
-            </p>
-          </div>
-        </div>
-
-        {/* Safety overview */}
-        <div className="p-6">
-          <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-            Safety &amp; Research Context
-          </h3>
-          {guide.safetyNotes.slice(0, 2).map((note, i) => (
-            <p
-              key={i}
-              className="mb-2 text-sm leading-relaxed"
-              style={{ color: "var(--foreground-secondary)" }}
-            >
-              {note}
-            </p>
-          ))}
-          {risks.length > 0 && (
-            <div className="mt-4">
-              <p
-                className="mb-2 text-xs font-semibold uppercase tracking-wide"
-                style={{ color: "var(--muted)" }}
-              >
-                Common research-noted risk themes
-              </p>
-              <ul className="space-y-1">
-                {risks.slice(0, 3).map((risk, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-1.5 text-xs"
-                    style={{ color: "var(--muted)" }}
-                  >
-                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--warning)" }} aria-hidden="true" />
-                    {risk}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <Link
-            href={`/learn/${guide.slug}`}
-            className="mt-5 inline-block text-xs font-semibold underline underline-offset-2 transition-opacity hover:opacity-70"
-            style={{ color: "var(--accent)" }}
-          >
-            Read the full safety &amp; research overview →
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PAGE COMPONENT (Server Component)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export default async function PeptideDetailPage({
   params,
@@ -343,179 +205,213 @@ export default async function PeptideDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const peptide = await getPeptideBySlug(slug);
+  const peptide = await getPeptideDetail(slug);
 
   if (!peptide) {
     notFound();
   }
 
-  // Build finnrick tests map keyed by vendor slug
-  const finnrickTests: Record<string, FinnrickTestItem[]> = {};
-  if (peptide.prices) {
-    for (const price of peptide.prices) {
-      const rat = (price as unknown as { finnrickTests?: FinnrickTestItem[] }).finnrickTests;
-      if (rat) finnrickTests[price.vendorSlug] = rat;
-    }
-  }
-
-  // Best Finnrick grade across all vendors
-  const gradeOrder: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
-  const allGrades = peptide.prices
-    .map((p) => p.finnrickRating?.grade)
-    .filter(Boolean) as string[];
-  const topGrade = allGrades.length > 0
-    ? allGrades.reduce((best, g) => (gradeOrder[g] ?? 0) > (gradeOrder[best] ?? 0) ? g : best)
-    : null;
+  const guide = getPeptideGuide(peptide.slug);
 
   return (
-    <div className="container-page py-8">
-      {/* Breadcrumb */}
-      <Link
-        href="/peptides"
-        className="mb-6 inline-flex items-center gap-1 text-sm transition-colors hover:text-[var(--accent)]"
-        style={{ color: "var(--muted)" }}
-      >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        Catalog
-      </Link>
+    <div className="section-spacing">
+      <PeptideDetailHeader
+        name={peptide.name}
+        description={peptide.description}
+        category={peptide.category}
+        grade={peptide.bestGrade}
+        bestPrice={peptide.bestPrice}
+        bestPriceVendor={peptide.bestPriceVendor}
+        trustScore={peptide.trustScore}
+      />
 
-      {/* Hero section */}
-      <div
-        className="mb-6 rounded-xl p-6 sm:p-8"
-        style={{
-          background: "var(--brand-navy)",
-        }}
-      >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            {/* Category pill */}
-            {peptide.category && (
-              <span
-                className="mb-2 inline-block rounded-full px-3 py-1 text-xs font-medium"
-                style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
-              >
-                {peptide.category}
-              </span>
-            )}
-            <h1 className="text-3xl font-bold text-white sm:text-4xl">
-              {peptide.name}
-            </h1>
-            {peptide.description && (
-              <p
-                className="mt-2 max-w-xl text-sm leading-relaxed"
-                style={{ color: "rgba(255,255,255,0.75)" }}
-              >
-                {peptide.description}
-              </p>
-            )}
-          </div>
-
-          {/* Key metrics */}
-          <div className="flex shrink-0 flex-wrap gap-3 sm:flex-col sm:items-end">
-            {peptide.bestPrice !== null && (
-              <div className="text-right">
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  Best price
-                </p>
-                <p className="text-2xl font-bold text-white">
-                  ${peptide.bestPrice.toFixed(2)}
-                </p>
-                <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  {peptide.bestPriceVendor}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Stats bar */}
-        <div
-          className="mt-6 flex flex-wrap gap-4 border-t pt-4"
-          style={{ borderColor: "rgba(255,255,255,0.15)" }}
+      <div className="container-page">
+        <Link
+          href="/peptides"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
         >
-          {/* Rating */}
-          <div className="flex items-center gap-2">
-            <StarRating rating={peptide.averageRating} size="sm" />
-            <span className="text-sm text-white/80">
-              {peptide.averageRating.toFixed(1)}
-              <span className="text-white/50"> ({peptide.reviewCount} reviews)</span>
-            </span>
-          </div>
+          ← Back to peptide comparison
+        </Link>
 
-          {/* Best lab grade */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60">Best lab grade:</span>
-            {topGrade ? (
-              <GradeBadge grade={topGrade as FinnrickGrade} compact />
-            ) : (
-              <GradeBadgeEmpty />
-            )}
-          </div>
-
-          {/* Trust score */}
-          {peptide.trustScore && (
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-white/60">Trust:</span>
-              <TrustScoreBar trustScore={peptide.trustScore} size="md" />
+        <section>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <span className="eyebrow">Price comparison</span>
+              <h2 className="section-heading mt-3">Current offers across tracked vendors</h2>
+              <p className="section-subheading">
+                Lowest price first, with Finnrick grades in the same row so cost never gets
+                divorced from lab context.
+              </p>
             </div>
-          )}
-
-          {/* Vendor count */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-white/60">
-              {peptide.priceCount} vendor{peptide.priceCount !== 1 ? "s" : ""}
-            </span>
+            <DataSourceTag source="Vendor websites" lastUpdated={peptide.priceRows[0]?.lastUpdated ?? null} href="/about#pricing" />
           </div>
-        </div>
+
+          <div className="table-shell mt-8 overflow-x-auto rounded-[1.5rem]">
+            <table className="min-w-full border-collapse text-left text-sm">
+              <thead className="bg-[var(--bg-tertiary)] text-[11px] uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Vendor</th>
+                  <th className="px-5 py-3 font-medium">Price</th>
+                  <th className="px-5 py-3 font-medium">Concentration</th>
+                  <th className="px-5 py-3 font-medium">Grade</th>
+                  <th className="px-5 py-3 font-medium">Updated</th>
+                  <th className="px-5 py-3 font-medium">Link</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-default)]">
+                {peptide.priceRows.map((row) => (
+                  <VendorPriceRow key={row.id} row={row} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <div className="max-w-2xl">
+            <span className="eyebrow">Lab data</span>
+            <h2 className="section-heading mt-3">What the Finnrick results actually show</h2>
+            <p className="section-subheading">
+              We highlight current purity and quantity results without implying every vendor
+              or every batch has been tested equally.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+            <PurityDistribution entries={peptide.purityEntries} />
+
+            <div className="space-y-4">
+              {peptide.labCards.length > 0 ? (
+                peptide.labCards.map((rating) => (
+                  <article key={rating.vendorSlug} className="surface-card rounded-[1.5rem] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-medium text-[var(--text-primary)]">{rating.vendorName}</p>
+                        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                          {rating.testCount} test{rating.testCount === 1 ? "" : "s"} · avg lab score{" "}
+                          <span className="font-mono">{rating.averageScore.toFixed(1)}/10</span>
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[var(--bg-tertiary)] px-3 py-1.5 font-mono text-sm text-[var(--text-primary)]">
+                        {rating.grade}
+                      </span>
+                    </div>
+                    <p className="mt-4 text-sm text-[var(--text-secondary)]">
+                      Latest Finnrick test {new Date(rating.newestTestDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    </p>
+                  </article>
+                ))
+              ) : (
+                <div className="surface-card rounded-[1.5rem] p-6">
+                  <p className="text-sm leading-7 text-[var(--text-secondary)]">
+                    No Finnrick lab results are attached to this peptide yet. We leave that
+                    state explicit rather than inferring confidence that hasn&apos;t been earned.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-14">
+          <div className="max-w-2xl">
+            <span className="eyebrow">Price history</span>
+            <h2 className="section-heading mt-3">Historical tracking comes next</h2>
+            <p className="section-subheading">
+              The current schema gives us a trustworthy live market snapshot. It does not yet
+              store price snapshots over time, so the chart module stays honest about that gap.
+            </p>
+          </div>
+
+          <div className="mt-8">
+            <PriceHistoryChart />
+          </div>
+        </section>
+
+        {(guide || peptide.relatedNews.length > 0 || peptide.reviews.length > 0) && (
+          <section className="mt-14">
+            <div className="max-w-2xl">
+              <span className="eyebrow">Research context</span>
+              <h2 className="section-heading mt-3">Editorial context beyond the price table</h2>
+              <p className="section-subheading">
+                The goal is to keep market data inside a broader research and safety frame,
+                not let the price table become the whole story.
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_1fr]">
+              <div className="space-y-6">
+                {guide && (
+                  <div className="surface-card rounded-[1.75rem] p-6">
+                    <span className="eyebrow">Guide</span>
+                    <h3 className="mt-4 font-[var(--font-newsreader)] text-3xl text-[var(--text-primary)]">
+                      {guide.name} explainer
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                      {guide.shortSummary}
+                    </p>
+                    <Link
+                      href={`/learn/${guide.slug}`}
+                      className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[var(--accent-primary)]"
+                    >
+                      Read the full research guide →
+                    </Link>
+                  </div>
+                )}
+
+                {peptide.reviews.length > 0 && (
+                  <div className="surface-card rounded-[1.75rem] p-6">
+                    <span className="eyebrow">Community</span>
+                    <h3 className="mt-4 font-[var(--font-newsreader)] text-3xl text-[var(--text-primary)]">
+                      Recent reader notes
+                    </h3>
+                    <div className="mt-5 space-y-5">
+                      {peptide.reviews.slice(0, 3).map((review) => (
+                        <article key={review.id} className="border-b border-[var(--border-default)] pb-5 last:border-b-0 last:pb-0">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="font-medium text-[var(--text-primary)]">{review.title}</p>
+                            <span className="font-mono text-sm text-[var(--text-secondary)]">
+                              {review.rating}/5
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                            {review.body}
+                          </p>
+                          <p className="mt-3 text-xs text-[var(--text-tertiary)]">
+                            {review.author} · {new Date(review.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-5">
+                {peptide.relatedNews.length > 0 ? (
+                  peptide.relatedNews.map((article) => (
+                    <ArticleCard key={article.id} article={article} variant="standard" />
+                  ))
+                ) : (
+                  <div className="surface-card rounded-[1.75rem] p-6">
+                    <span className="eyebrow">Coverage</span>
+                    <h3 className="mt-4 font-[var(--font-newsreader)] text-3xl text-[var(--text-primary)]">
+                      No related headlines yet
+                    </h3>
+                    <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                      This compound hasn&apos;t been tagged in the news feed yet. When new
+                      coverage lands, we&apos;ll surface it here instead of stuffing the section
+                      with irrelevant filler.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <MedicalDisclaimer variant="callout" className="mt-14" />
       </div>
-
-      {/* Vendor comparison */}
-      <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
-            Vendor Prices
-          </h2>
-          <div className="flex items-center gap-2">
-            {/* Trust badge for the peptide overall */}
-            <TrustBadge
-              type={deriveTrustBadge({
-                hasLabData: allGrades.length > 0,
-                grade: topGrade,
-                trustScore: peptide.trustScore?.overall,
-                testCount: peptide.prices.reduce(
-                  (sum, p) => sum + (p.finnrickRating?.testCount ?? 0),
-                  0,
-                ),
-              })}
-              grade={topGrade ?? undefined}
-            />
-            <Badge variant="info" size="sm">Refreshed every 15 min</Badge>
-          </div>
-        </div>
-
-        {/* Grade scale tip */}
-        <GradeScaleTip className="mb-4" />
-
-        <PriceTable
-          prices={peptide.prices}
-          peptideName={peptide.name}
-          finnrickTests={finnrickTests}
-        />
-      </section>
-
-      {/* Educational guide panel */}
-      <PeptideGuidePanel slug={slug} />
-
-      {/* Trust score explainer */}
-      {peptide.trustScore && <TrustScoreTip className="mb-8" />}
-
-      {/* Data transparency note */}
-      <MedicalDisclaimer className="mb-8" />
-
-      {/* Reviews (client component for interactivity) */}
-      <ReviewSectionClient peptideId={peptide.id} reviews={peptide.reviews} />
     </div>
   );
 }

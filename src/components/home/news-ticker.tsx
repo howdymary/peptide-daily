@@ -19,7 +19,7 @@
  *  - Style: edit the wrapper className / colors below.
  */
 
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface TickerItem {
   text: string;
@@ -45,10 +45,14 @@ export function NewsTickerBanner({ items }: NewsTickerBannerProps) {
   // Carousel auto-advance (reduced-motion mode)
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mq.matches);
+    const sync = () => setReducedMotion(mq.matches);
+    const syncTimer = window.setTimeout(sync, 0);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    return () => {
+      window.clearTimeout(syncTimer);
+      mq.removeEventListener("change", handler);
+    };
   }, []);
 
   useEffect(() => {
@@ -61,11 +65,17 @@ export function NewsTickerBanner({ items }: NewsTickerBannerProps) {
     };
   }, [reducedMotion, paused, items.length]);
 
-  // Restore dismissed state from sessionStorage after hydration
   useEffect(() => {
-    if (sessionStorage.getItem(DISMISS_KEY) === "1") setDismissed(true);
-  }, []);
+    const timer = window.setTimeout(() => {
+      try {
+        setDismissed(sessionStorage.getItem(DISMISS_KEY) === "1");
+      } catch {
+        setDismissed(false);
+      }
+    }, 0);
 
+    return () => window.clearTimeout(timer);
+  }, []);
   function dismiss() {
     setDismissed(true);
     sessionStorage.setItem(DISMISS_KEY, "1");
