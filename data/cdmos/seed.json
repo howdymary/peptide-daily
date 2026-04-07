@@ -1,0 +1,82 @@
+[
+  {
+    "name": "PolyPeptide Group",
+    "slug": "polypeptide-group",
+    "website": "https://www.polypeptide.com",
+    "city": "Torrance",
+    "state": "CA",
+    "description": "Global CDMO specializing in peptide API manufacturing with cGMP facilities in the US, Europe, and India. Capabilities from early development through commercial-scale production.",
+    "capabilities": ["API synthesis", "process development", "analytical services", "commercial manufacturing"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "Bachem",
+    "slug": "bachem",
+    "website": "https://www.bachem.com",
+    "city": "Vista",
+    "state": "CA",
+    "description": "Leading independent CDMO for peptide and oligonucleotide APIs. Over 50 years of experience in complex peptide manufacturing from research through commercial scale.",
+    "capabilities": ["API synthesis", "process development", "lyophilization", "analytical services", "commercial manufacturing"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "Genscript ProBio",
+    "slug": "genscript-probio",
+    "website": "https://www.genscriptprobio.com",
+    "city": "Piscataway",
+    "state": "NJ",
+    "description": "CDMO offering end-to-end peptide drug development services including solid-phase synthesis, purification, lyophilization, and fill-finish under cGMP.",
+    "capabilities": ["API synthesis", "fill-finish", "lyophilization", "formulation", "analytical services"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "Pepscan",
+    "slug": "pepscan",
+    "website": "https://www.pepscan.com",
+    "city": null,
+    "state": null,
+    "description": "Netherlands-based CDMO with US operations specializing in constrained peptide drug discovery and cGMP manufacturing for clinical and commercial supply.",
+    "capabilities": ["API synthesis", "constrained peptides", "process development", "analytical services"],
+    "fdaRegistered": false
+  },
+  {
+    "name": "AmbioPharm",
+    "slug": "ambiopharm",
+    "website": "https://www.ambiopharm.com",
+    "city": "North Augusta",
+    "state": "SC",
+    "description": "US-based peptide CDMO offering large-scale solid-phase and solution-phase peptide synthesis with cGMP manufacturing and regulatory filing support.",
+    "capabilities": ["API synthesis", "process development", "commercial manufacturing", "regulatory support"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "Corden Pharma",
+    "slug": "corden-pharma",
+    "website": "https://www.cordenpharma.com",
+    "city": "Boulder",
+    "state": "CO",
+    "description": "Full-service CDMO with peptide API synthesis, lipid chemistry, and drug product manufacturing capabilities across multiple US and European facilities.",
+    "capabilities": ["API synthesis", "formulation", "fill-finish", "lyophilization", "lipid chemistry"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "Vivitide (formerly New England Peptide)",
+    "slug": "vivitide",
+    "website": "https://www.vivitide.com",
+    "city": "Gardner",
+    "state": "MA",
+    "description": "Peptide CDMO specializing in custom peptide synthesis from milligram to multi-kilogram scale, including modified and cyclic peptides under cGMP.",
+    "capabilities": ["API synthesis", "custom synthesis", "modified peptides", "analytical services"],
+    "fdaRegistered": true
+  },
+  {
+    "name": "CS Bio",
+    "slug": "cs-bio",
+    "website": "https://www.csbio.com",
+    "city": "Menlo Park",
+    "state": "CA",
+    "description": "Peptide synthesis equipment manufacturer and CDMO providing custom peptide production, peptide synthesizers, and GMP manufacturing services.",
+    "capabilities": ["API synthesis", "equipment manufacturing", "custom synthesis", "process development"],
+    "fdaRegistered": false
+  }
+]

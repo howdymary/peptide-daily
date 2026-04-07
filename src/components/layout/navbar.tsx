@@ -9,6 +9,8 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 const NAV_LINKS = [
   { href: "/peptides", label: "Peptides" },
   { href: "/vendors", label: "Vendors" },
+  { href: "/directory", label: "Directory" },
+  { href: "/tools", label: "Tools" },
   { href: "/news", label: "News" },
   { href: "/learn", label: "Learn" },
 ];

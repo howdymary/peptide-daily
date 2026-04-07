@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Metabolic & GLP-1",
+    "slug": "metabolic",
+    "description": "GLP-1 receptor agonists, GIP/glucagon dual and triple agonists, and other metabolic peptides used in weight management, glucose regulation, and metabolic syndrome research.",
+    "displayOrder": 1
+  },
+  {
+    "name": "Growth Hormone Secretagogues",
+    "slug": "growth-hormone",
+    "description": "Growth hormone releasing peptides (GHRPs), growth hormone releasing hormone analogs, and secretagogues that stimulate endogenous GH production.",
+    "displayOrder": 2
+  },
+  {
+    "name": "Tissue Repair & Healing",
+    "slug": "tissue-repair",
+    "description": "Peptides involved in wound healing, tissue regeneration, tendon and ligament repair, and recovery from musculoskeletal injuries.",
+    "displayOrder": 3
+  },
+  {
+    "name": "Melanocortin & Sexual Health",
+    "slug": "melanocortin",
+    "description": "Melanocortin receptor agonists affecting pigmentation, sexual function, appetite regulation, and inflammatory responses.",
+    "displayOrder": 4
+  },
+  {
+    "name": "Neuroprotective & Cognitive",
+    "slug": "neuroprotective",
+    "description": "Peptides with nootropic, anxiolytic, or neuroprotective properties that support cognitive function, memory, and neuronal health.",
+    "displayOrder": 5
+  },
+  {
+    "name": "Cosmetic & Dermal",
+    "slug": "cosmetic",
+    "description": "Peptides used in skincare for collagen stimulation, wrinkle reduction, pigmentation control, and dermal matrix support.",
+    "displayOrder": 6
+  },
+  {
+    "name": "Immune Modulation",
+    "slug": "immune-modulating",
+    "description": "Thymic peptides, antimicrobial peptides, and immune regulators that modulate innate and adaptive immune responses.",
+    "displayOrder": 7
+  },
+  {
+    "name": "Longevity & Anti-Aging",
+    "slug": "longevity",
+    "description": "Peptides studied for their potential to influence cellular senescence, telomere maintenance, mitochondrial function, and biological aging.",
+    "displayOrder": 8
+  },
+  {
+    "name": "Antimicrobial",
+    "slug": "antimicrobial",
+    "description": "Host defense peptides and synthetic antimicrobial peptides with activity against bacteria, fungi, and viruses.",
+    "displayOrder": 9
+  },
+  {
+    "name": "Sleep & Recovery",
+    "slug": "sleep",
+    "description": "Peptides that influence circadian rhythm, sleep architecture, and systemic recovery processes.",
+    "displayOrder": 10
+  },
+  {
+    "name": "Gastrointestinal",
+    "slug": "gastrointestinal",
+    "description": "Peptides targeting gut barrier integrity, intestinal permeability, and gastrointestinal inflammatory conditions.",
+    "displayOrder": 11
+  }
+]

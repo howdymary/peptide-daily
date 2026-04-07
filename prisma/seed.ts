@@ -7,6 +7,9 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { seedCategories } from "./seeds/seed-categories";
+import { seedProviders } from "./seeds/seed-providers";
+import { seedPeptideCatalog } from "./seeds/seed-peptide-catalog";
 
 const prisma = new PrismaClient();
 
@@ -768,6 +771,14 @@ async function main() {
   }
 
   console.log(`Seeded ${guides.length} guides.`);
+
+  // ── Extended catalog & directory seeds ─────────────────────────────────────
+
+  console.log("\nSeeding extended catalog...");
+  await seedCategories(prisma);
+  await seedPeptideCatalog(prisma);
+  await seedProviders(prisma);
+  console.log("Extended catalog seeded.\n");
 }
 
 main()

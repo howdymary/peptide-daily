@@ -78,9 +78,10 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  accounts Account[]
-  sessions Session[]
-  reviews  Review[]
+  accounts  Account[]
+  sessions  Session[]
+  reviews   Review[]
+  protocols Protocol[]
 
   @@map("users")
 }
@@ -97,26 +98,51 @@ model Vendor {
   prices          PeptidePrice[]
   finnrickRatings FinnrickVendorRating[]
   vendorMapping   VendorMapping?
+  editorialReview VendorReview?
 
   @@map("vendors")
 }
 
 model Peptide {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?  @db.Text
-  category    String?
-  sequence    String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  slug                String   @unique
+  description         String?  @db.Text
+  category            String?
+  sequence            String?
+  /// Molecular weight in Daltons
+  molecularWeight     Float?   @map("molecular_weight")
+  /// Human-readable half-life, e.g. "~5 days" or "2–4 hours"
+  halfLife            String?  @map("half_life")
+  /// e.g. "subcutaneous" | "intramuscular" | "oral" | "topical" | "intranasal"
+  administrationRoute String?  @map("administration_route")
+  /// fda-approved | investigational | research-chemical | compounded | approved-intl
+  regulatoryStatus    String?  @map("regulatory_status")
+  /// User-intent tags: weight-loss, muscle-growth, recovery, skin, longevity, etc.
+  goalTags            String[] @map("goal_tags")
+  /// Alternative names / trade names
+  aliases             String[]
+  /// Mechanism of action prose
+  mechanismOfAction   String?  @map("mechanism_of_action") @db.Text
+  /// JSON blob: { overview, researchContext, safetyNotes, references, hubNote, seeAlso }
+  contentJson         String?  @map("content_json") @db.Text
+  /// FK to PeptideCategory
+  categoryId          String?  @map("category_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
-  prices          PeptidePrice[]
-  reviews         Review[]
-  finnrickRatings FinnrickVendorRating[]
+  peptideCategory  PeptideCategory?      @relation(fields: [categoryId], references: [id])
+  prices           PeptidePrice[]
+  reviews          Review[]
+  finnrickRatings  FinnrickVendorRating[]
+  interactionsA    PeptideInteraction[]  @relation("InteractionA")
+  interactionsB    PeptideInteraction[]  @relation("InteractionB")
+  pkProfiles       PharmacokineticProfile[]
 
   @@index([slug])
   @@index([name])
+  @@index([categoryId])
+  @@index([regulatoryStatus])
   @@map("peptides")
 }
 
@@ -287,6 +313,272 @@ model VendorMapping {
   @@index([statusFlag])
   @@index([lastScrapedAt])
   @@map("vendor_mappings")
+}
+
+// ── Peptide interactions ─────────────────────────────────────────────────────
+
+/// Known interactions between two peptides, used for safety checking
+/// in the Protocol Builder.
+model PeptideInteraction {
+  id          String  @id @default(cuid())
+  peptideAId  String  @map("peptide_a_id")
+  peptideBId  String  @map("peptide_b_id")
+  /// safe | caution | avoid
+  severity    String
+  description String  @db.Text
+  source      String?
+  peptideA    Peptide @relation("InteractionA", fields: [peptideAId], references: [id], onDelete: Cascade)
+  peptideB    Peptide @relation("InteractionB", fields: [peptideBId], references: [id], onDelete: Cascade)
+
+  @@unique([peptideAId, peptideBId])
+  @@map("peptide_interactions")
+}
+
+// ── Protocols ───────────────────────────────────────────────────────────────
+
+/// User-created peptide protocol (stack) with safety scoring and shareability.
+model Protocol {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  goalTags    String[] @map("goal_tags")
+  /// Ordered array of peptide IDs in this protocol
+  peptideIds  String[] @map("peptide_ids")
+  /// Computed from interactions (0–100)
+  safetyScore Int?     @map("safety_score") @db.SmallInt
+  isPublic    Boolean  @default(false) @map("is_public")
+  creatorId   String?  @map("creator_id")
+  /// nanoid token for shareable URLs
+  shareToken  String?  @unique @map("share_token")
+  viewCount   Int      @default(0) @map("view_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  creator User? @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+
+  @@index([isPublic])
+  @@index([shareToken])
+  @@map("protocols")
+}
+
+/// Curated combination protocol (editorial, not user-created).
+model CombinationProtocol {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  displayName String   @map("display_name")
+  description String   @db.Text
+  goalTags    String[] @map("goal_tags")
+  peptideIds  String[] @map("peptide_ids")
+  rationale   String   @db.Text
+  safetyNotes String   @map("safety_notes") @db.Text
+  popularity  Int      @default(0)
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("combination_protocols")
+}
+
+// ── Pharmacokinetic profiles ────────────────────────────────────────────────
+
+/// Published PK data for the Kinetics Lab visualizer.
+model PharmacokineticProfile {
+  id              String  @id @default(cuid())
+  peptideId       String  @map("peptide_id")
+  /// subcutaneous | intramuscular | oral
+  routeOfAdmin    String  @map("route_of_admin")
+  /// Hours to peak concentration
+  tmax            Float
+  /// Elimination half-life in hours
+  halfLife        Float   @map("half_life")
+  /// Bioavailability percentage (0–100)
+  bioavailability Float?
+  /// JSON array of { time: number, concentration: number } data points
+  curveDataJson   String  @map("curve_data_json") @db.Text
+  /// Citation for the PK data
+  source          String
+
+  peptide Peptide @relation(fields: [peptideId], references: [id], onDelete: Cascade)
+
+  @@unique([peptideId, routeOfAdmin])
+  @@map("pharmacokinetic_profiles")
+}
+
+// ── Articles & content ──────────────────────────────────────────────────────
+
+/// Editorial article with MDX body stored in the database.
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String    @db.Text
+  /// MDX content stored as a string
+  bodyMdx     String    @map("body_mdx") @db.Text
+  /// investigation | education | technical | market
+  category    String
+  authorName  String    @map("author_name")
+  authorBio   String?   @map("author_bio") @db.Text
+  coverImage  String?   @map("cover_image")
+  tags        String[]
+  readingTime Int       @default(5) @map("reading_time")
+  isPublished Boolean   @default(false) @map("is_published")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([isPublished])
+  @@index([publishedAt(sort: Desc)])
+  @@map("articles")
+}
+
+/// Downloadable resource / lead magnet.
+model LeadMagnet {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String   @db.Text
+  /// Filename in /public/downloads/ or external URL
+  fileName      String   @map("file_name")
+  fileSize      Int      @map("file_size")
+  coverImage    String?  @map("cover_image")
+  downloadCount Int      @default(0) @map("download_count")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("lead_magnets")
+}
+
+// ── Verified Source Program ─────────────────────────────────────────────────
+
+/// Application for the $99/yr Verified Source badge.
+model VerifiedSourceApplication {
+  id           String    @id @default(cuid())
+  vendorId     String?   @map("vendor_id")
+  providerId   String?   @map("provider_id")
+  contactName  String    @map("contact_name")
+  contactEmail String    @map("contact_email")
+  /// pending | approved | rejected
+  status       String    @default("pending")
+  paidAt       DateTime? @map("paid_at")
+  expiresAt    DateTime? @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("verified_source_applications")
+}
+
+// ── Manufacturing Partners (CDMO) ───────────────────────────────────────────
+
+/// Contract Development and Manufacturing Organization.
+model Cdmo {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  slug          String   @unique
+  website       String?
+  city          String?
+  state         String?  @db.VarChar(2)
+  description   String?  @db.Text
+  /// API synthesis | fill-finish | lyophilization | analytical | formulation
+  capabilities  String[]
+  fdaRegistered Boolean  @default(false) @map("fda_registered")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([state])
+  @@map("cdmos")
+}
+
+// ── Peptide categories ──────────────────────────────────────────────────────
+
+model PeptideCategory {
+  id           String            @id @default(cuid())
+  name         String            @unique
+  slug         String            @unique
+  description  String?           @db.Text
+  displayOrder Int               @default(0) @map("display_order")
+  parentId     String?           @map("parent_id")
+  parent       PeptideCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children     PeptideCategory[] @relation("CategoryTree")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  peptides Peptide[]
+
+  @@map("peptide_categories")
+}
+
+// ── Provider directory ──────────────────────────────────────────────────────
+
+/// Clinics, pharmacies (503A/503B), telehealth, and online vendors.
+/// Distinct from Vendor (which represents research peptide vendors with scrapers).
+model Provider {
+  id               String    @id @default(cuid())
+  name             String    @unique
+  slug             String    @unique
+  /// clinic | pharmacy_503a | pharmacy_503b | telehealth | online_vendor
+  type             String
+  website          String?
+  phone            String?
+  email            String?
+  address          String?   @db.Text
+  city             String?
+  state            String?   @db.VarChar(2)
+  zipCode          String?   @map("zip_code") @db.VarChar(10)
+  country          String    @default("US") @db.VarChar(2)
+  latitude         Float?
+  longitude        Float?
+  description      String?   @db.Text
+  services         String[]
+  acceptsInsurance Boolean   @default(false) @map("accepts_insurance")
+  offersTelehealth Boolean   @default(false) @map("offers_telehealth")
+  fdaRegistered    Boolean   @default(false) @map("fda_registered")
+  cpsVerified      Boolean   @default(false) @map("cps_verified")
+  lastVerifiedAt   DateTime? @map("last_verified_at")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([type])
+  @@index([state])
+  @@index([isActive])
+  @@map("providers")
+}
+
+// ── Editorial vendor reviews ────────────────────────────────────────────────
+
+/// Standardized editorial deep-dive reviews (distinct from user Review model).
+model VendorReview {
+  id              String   @id @default(cuid())
+  vendorId        String   @unique @map("vendor_id")
+  /// Scoring dimensions (1–10 scale)
+  testingScore    Int      @map("testing_score") @db.SmallInt
+  catalogScore    Int      @map("catalog_score") @db.SmallInt
+  pricingScore    Int      @map("pricing_score") @db.SmallInt
+  reputationScore Int      @map("reputation_score") @db.SmallInt
+  shippingScore   Int      @map("shipping_score") @db.SmallInt
+  paymentScore    Int      @map("payment_score") @db.SmallInt
+  overallScore    Decimal  @map("overall_score") @db.Decimal(3, 1)
+  summary         String   @db.Text
+  /// JSON array of pros
+  prosJson        String   @map("pros_json") @db.Text
+  /// JSON array of cons
+  consJson        String   @map("cons_json") @db.Text
+  verdict         String   @db.Text
+  authorName      String   @map("author_name")
+  reviewDate      DateTime @map("review_date")
+  isPublished     Boolean  @default(false) @map("is_published")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_reviews")
 }
 
 // ── News & content models ────────────────────────────────────────────────────

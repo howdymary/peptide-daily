@@ -11,6 +11,7 @@ import { PriceHistoryChart } from "@/components/peptides/price-history-chart";
 import { ArticleCard } from "@/components/primitives/article-card";
 import { DataSourceTag } from "@/components/primitives/data-source-tag";
 import { MedicalDisclaimer } from "@/components/primitives/medical-disclaimer";
+import { SourceFinder } from "@/components/peptides/source-finder";
 import type { FinnrickGrade } from "@/types";
 
 async function getPeptideDetail(slug: string) {
@@ -61,6 +62,31 @@ async function getPeptideDetail(slug: string) {
   });
 
   if (!peptide) return null;
+
+  // Source Finder: get providers that may carry this peptide
+  // (clinics, pharmacies, telehealth with relevant services)
+  const relevantProviders = await prisma.provider.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        { services: { has: "peptide-therapy" } },
+        { services: { has: "peptide-formulation" } },
+        { services: { has: "compounding" } },
+      ],
+    },
+    select: {
+      slug: true,
+      name: true,
+      type: true,
+      city: true,
+      state: true,
+      offersTelehealth: true,
+      fdaRegistered: true,
+      cpsVerified: true,
+    },
+    orderBy: [{ fdaRegistered: "desc" }, { name: "asc" }],
+    take: 6,
+  });
 
   const relatedNews = await prisma.newsArticle.findMany({
     where: {
@@ -178,6 +204,7 @@ async function getPeptideDetail(slug: string) {
       author: review.user.name ?? "Anonymous",
       createdAt: review.createdAt,
     })),
+    relevantProviders,
   };
 }
 
@@ -266,6 +293,11 @@ export default async function PeptideDetailPage({
             </table>
           </div>
         </section>
+
+        <SourceFinder
+          peptideName={peptide.name}
+          providers={peptide.relevantProviders}
+        />
 
         <section className="mt-14">
           <div className="max-w-2xl">
